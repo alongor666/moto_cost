@@ -3,6 +3,7 @@
         const DOMElements = {}; 
         const EChartsInstances = {};
         let currentInputValues = {};
+        let exportCounter = 1;
         const DEFAULT_SCHEME_KEY = '120.8';
         const DEFAULT_ANALYSIS_TAB = 'combined';
         const APP_CONFIG = {
@@ -246,7 +247,16 @@
                 if (indicator.rateIndex !== undefined) { const rateArray = sectionData === data.combined.rate ? sectionData : sectionData.rate; return (rateArray[indicator.rateIndex] * 100).toFixed(1); } return ''; 
             }
             indicatorMap.forEach(indicator => { const row = [indicator.name, getValue(data.car, indicator), getValue(data.moto, indicator), getValue(indicator.isPercent ? data.combined.rate : data.combined, indicator)]; csvContent += row.join(',') + '\n'; });
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = '成本洞察Pro_测算结果.csv'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}`;
+            link.download = `摩托车成本分析_${dateStr}_${String(exportCounter).padStart(3,'0')}.csv`;
+            exportCounter++;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // --- Core Update Cycle & Event Listeners (mostly same) ---
