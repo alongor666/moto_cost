@@ -4,44 +4,7 @@
         const EChartsInstances = {};
         let currentInputValues = {};
         let exportCounter = 1;
-        const DEFAULT_SCHEME_KEY = '120.8';
-        const DEFAULT_ANALYSIS_TAB = 'combined';
-        const APP_CONFIG = {
-            THEME_STORAGE_KEY: 'costInsightProTheme',
-            INDICATOR_CONFIG: { // UPDATED LABELS
-                PREMIUM: { label: '保费', colorKey: 'neutral', isRate: false },
-                LOSS: { label: '赔款', colorKey: 'neutral', isRate: false },
-                HANDLING_FEE: { label: '手续费', colorKey: 'neutral', isRate: false },
-                SALES_PROMOTION: { label: '销推费用', colorKey: 'neutral', isRate: false },
-                LABOR_COST: { label: '人力成本', colorKey: 'neutral', isRate: false },
-                EDGE_CONTRIBUTION: { label: '边际贡献额', colorKey: 'conditional', isRate: false, positiveGood: true },
-                PROFIT: { label: '利润', colorKey: 'conditional', isRate: false, positiveGood: true },
-                TCR: { label: '综合成本率', colorKey: 'conditional', isRate: true, threshold: 1, higherIsWorse: true },
-                VCR: { label: '变动成本率', colorKey: 'conditional', isRate: true, threshold: 0.9, higherIsWorse: true },
-                LOSS_RATIO: { label: '赔付率', colorKey: 'neutral', isRate: true },
-                HANDLING_FEE_RATIO: { label: '手续费率', colorKey: 'neutral', isRate: true },
-                SALES_PROMOTION_RATIO: { label: '销推费用率', colorKey: 'neutral', isRate: true },
-                LABOR_COST_RATIO: { label: '人力成本率', colorKey: 'neutral', isRate: true },
-                EDGE_CONTRIBUTION_RATIO: { label: '边际贡献率', colorKey: 'conditional', isRate: true, positiveGood: true }
-            },
-            ABSOLUTE_CHART_INDICATORS: ['PREMIUM', 'LOSS', 'HANDLING_FEE', 'SALES_PROMOTION', 'LABOR_COST', 'EDGE_CONTRIBUTION', 'PROFIT'],
-            RATE_CHART_INDICATORS: ['TCR', 'VCR', 'LOSS_RATIO', 'HANDLING_FEE_RATIO', 'SALES_PROMOTION_RATIO', 'LABOR_COST_RATIO', 'EDGE_CONTRIBUTION_RATIO'],
-            SCHEMES: { /* Same as before */ 
-                '150': { name: '方案A', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1200, carLossRatio: 150, carHandlingFeeRate: 0, carSalesPromotionRate: 0.15, carStandardPremiumRatio: 0.5, motoPremiumRatio: 1.75, motoLossRatio: 4, motoHandlingFeeRate: 66.1, motoSalesPromotionRate: 0.74, motoStandardPremiumRatio: 1.8 }},
-                '135': { name: '方案B', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1200, carLossRatio: 135, carHandlingFeeRate: 0, carSalesPromotionRate: 0.15, carStandardPremiumRatio: 0.5, motoPremiumRatio: 1.75, motoLossRatio: 4, motoHandlingFeeRate: 66.1, motoSalesPromotionRate: 0.74, motoStandardPremiumRatio: 1.8 }},
-                '120.8': { name: '方案C (保本)', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1200, carLossRatio: 120.8, carHandlingFeeRate: 0, carSalesPromotionRate: 0.15, carStandardPremiumRatio: 0.5, motoPremiumRatio: 1.75, motoLossRatio: 4, motoHandlingFeeRate: 66.1, motoSalesPromotionRate: 0.74, motoStandardPremiumRatio: 1.8 }},
-                '110': { name: '方案D', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1200, carLossRatio: 110, carHandlingFeeRate: 0, carSalesPromotionRate: 0.15, carStandardPremiumRatio: 0.5, motoPremiumRatio: 1.75, motoLossRatio: 4, motoHandlingFeeRate: 66.1, motoSalesPromotionRate: 0.74, motoStandardPremiumRatio: 1.8 }}
-            },
-            INPUT_SELECTORS: { /* Same as before */
-                laborBaseRate: '#laborBaseRate', fixedOperationRate: '#fixedOperationRate', carPremium: '#carPremium', carLossRatio: '#carLossRatio', carHandlingFeeRate: '#carHandlingFeeRate', carSalesPromotionRate: '#carSalesPromotionRate', carStandardPremiumRatio: '#carStandardPremiumRatio', motoPremiumRatio: '#motoPremiumRatio', motoLossRatio: '#motoLossRatio', motoHandlingFeeRate: '#motoHandlingFeeRate', motoSalesPromotionRate: '#motoSalesPromotionRate', motoStandardPremiumRatio: '#motoStandardPremiumRatio',
-            },
-            CHART_SELECTORS: { /* Same as before */
-                combinedAbsolute: '#combinedAbsoluteChart', combinedRate: '#combinedRateChart', carAbsolute: '#carAbsoluteChart', carRate: '#carRateChart', motoAbsolute: '#motoAbsoluteChart', motoRate: '#motoRateChart',
-             },
-            KPI_SELECTORS: { /* Same as before */
-                totalProfit: '#kpiTotalProfit', totalCostRate: '#kpiTotalCostRate', totalPremium: '#kpiTotalPremium', totalEdgeContribution: '#kpiTotalEdgeContribution',
-            }
-        };
+        let lastCalculatedData = null;
 
         // --- Utilities ---
         const $ = (s) => document.querySelector(s);
@@ -49,6 +12,17 @@
         const getInputValue = (id) => parseFloat(DOMElements.inputs[id].value) || 0;
         const getInputValueAsRate = (id) => (parseFloat(DOMElements.inputs[id].value) / 100) || 0;
         const getCssVariable = (varName) => getComputedStyle(DOMElements.html).getPropertyValue(varName).trim();
+        const debounce = (fn, delay = 300) => {
+            let timer;
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn.apply(this, args), delay);
+            };
+        };
+        const getActiveTab = () => {
+            const activeBtn = DOMElements.analysisTabsContainer.querySelector('.analysis-tab-btn.is-active');
+            return activeBtn ? activeBtn.dataset.tab : DEFAULT_ANALYSIS_TAB;
+        };
 
         // --- DOM Cache, Theme, Drawer, Modal, Scheme, Tabs (mostly same logic as before) ---
         function cacheDOMElements() { /* ... same as before ... */ 
@@ -65,7 +39,23 @@
         function highlightChangedParameters() { for (const key in DOMElements.inputs) { const inputElement = DOMElements.inputs[key]; inputElement.classList.remove('form-field__input--highlight'); if (inputElement.value !== currentInputValues[key]) { inputElement.classList.add('form-field__input--highlight'); inputElement.addEventListener('animationend', () => inputElement.classList.remove('form-field__input--highlight'), { once: true }); } } }
         function applyScheme(schemeKey) { storeCurrentInputValues(); const scheme = APP_CONFIG.SCHEMES[schemeKey]; if (!scheme || !scheme.params) return; for (const key in scheme.params) if (DOMElements.inputs[key]) DOMElements.inputs[key].value = scheme.params[key]; updateUI(); toggleParametersDrawer(true); requestAnimationFrame(() => requestAnimationFrame(highlightChangedParameters)); }
         function handleSchemeChange(event) { const targetButton = event.target.closest('.btn'); if (!targetButton || !targetButton.dataset.scheme) return; const schemeKey = targetButton.dataset.scheme; applyScheme(schemeKey); $$('#schemeSelector .btn').forEach(btn => btn.classList.remove('is-active')); targetButton.classList.add('is-active'); }
-        function handleAnalysisTabClick(event) { const targetButton = event.target.closest('.analysis-tab-btn'); if (!targetButton || !targetButton.dataset.tab) return; const tabKey = targetButton.dataset.tab; $$('.analysis-tab-btn').forEach(btn => btn.classList.remove('is-active')); $$('.analysis-content').forEach(content => content.classList.remove('is-active')); targetButton.classList.add('is-active'); const activeContent = $(`#analysisContent${tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}`); if (activeContent) activeContent.classList.add('is-active'); ['Absolute', 'Rate'].forEach(type => { const chartKey = `${tabKey}${type}`; if (EChartsInstances[chartKey] && typeof EChartsInstances[chartKey].resize === 'function') setTimeout(() => EChartsInstances[chartKey].resize(), 50); }); }
+        function handleAnalysisTabClick(event) {
+            const targetButton = event.target.closest('.analysis-tab-btn');
+            if (!targetButton || !targetButton.dataset.tab) return;
+            const tabKey = targetButton.dataset.tab;
+            $$('.analysis-tab-btn').forEach(btn => btn.classList.remove('is-active'));
+            $$('.analysis-content').forEach(content => content.classList.remove('is-active'));
+            targetButton.classList.add('is-active');
+            const activeContent = $(`#analysisContent${tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}`);
+            if (activeContent) activeContent.classList.add('is-active');
+            if (lastCalculatedData) updateChartsForTab(tabKey, lastCalculatedData);
+            ['Absolute', 'Rate'].forEach(type => {
+                const chartKey = `${tabKey}${type}`;
+                if (EChartsInstances[chartKey] && typeof EChartsInstances[chartKey].resize === 'function') {
+                    setTimeout(() => EChartsInstances[chartKey].resize(), 50);
+                }
+            });
+        }
         function setActiveAnalysisTab(tabKey) { const tabButton = $(`#analysisTabsContainer .analysis-tab-btn[data-tab="${tabKey}"]`); if (tabButton) tabButton.click(); }
         
         // --- KPI Update (Adjusted for 1 decimal place) ---
@@ -227,17 +217,48 @@
                 series: [{ ...themeOpts.seriesBase, data: seriesData }]
             };
         }
-        
-        function initCharts() { /* ... same as before ... */ 
-            for (const key in APP_CONFIG.CHART_SELECTORS) { const chartDom = $(APP_CONFIG.CHART_SELECTORS[key]); if (chartDom) EChartsInstances[key] = echarts.init(chartDom); }
-        }
-        function updateAllCharts(data) { /* ... same as before, but pass chart titles ... */
-            const setOpt = (key, optionFn, dataArg, title) => { if (EChartsInstances[key] && typeof EChartsInstances[key].setOption === 'function') { EChartsInstances[key].clear(); EChartsInstances[key].setOption(optionFn(dataArg, title), true); } else { console.warn(`Chart instance for ${key} is not available.`); } };
-            setOpt('carAbsolute', createAbsoluteChartOption, data.car.absolute, '关键指标金额 (万元)'); setOpt('carRate', createRateChartOption, data.car.rate, '核心效能比率 (%)'); 
-            setOpt('motoAbsolute', createAbsoluteChartOption, data.moto.absolute, '关键指标金额 (万元)'); setOpt('motoRate', createRateChartOption, data.moto.rate, '核心效能比率 (%)'); 
-            setOpt('combinedAbsolute', createAbsoluteChartOption, data.combined.absolute, '关键指标金额 (万元)'); setOpt('combinedRate', createRateChartOption, data.combined.rate, '核心效能比率 (%)');
-        }
 
+        const CHART_META = {
+            carAbsolute: { getter: d => d.car.absolute, title: '关键指标金额 (万元)', option: createAbsoluteChartOption },
+            carRate: { getter: d => d.car.rate, title: '核心效能比率 (%)', option: createRateChartOption },
+            motoAbsolute: { getter: d => d.moto.absolute, title: '关键指标金额 (万元)', option: createAbsoluteChartOption },
+            motoRate: { getter: d => d.moto.rate, title: '核心效能比率 (%)', option: createRateChartOption },
+            combinedAbsolute: { getter: d => d.combined.absolute, title: '关键指标金额 (万元)', option: createAbsoluteChartOption },
+            combinedRate: { getter: d => d.combined.rate, title: '核心效能比率 (%)', option: createRateChartOption }
+        };
+        const TAB_CHARTS = {
+            car: ['carAbsolute', 'carRate'],
+            moto: ['motoAbsolute', 'motoRate'],
+            combined: ['combinedAbsolute', 'combinedRate']
+        };
+
+        function updateChartsForTab(tabKey, data) {
+            const chartKeys = TAB_CHARTS[tabKey] || [];
+            chartKeys.forEach(key => {
+                const meta = CHART_META[key];
+                const chart = EChartsInstances[key];
+                if (chart && meta) {
+                    chart.showLoading();
+                    chart.clear();
+                    chart.setOption(meta.option(meta.getter(data), meta.title), true);
+                    chart.hideLoading();
+                }
+            });
+        }
+        
+        function initCharts() {
+            for (const key in APP_CONFIG.CHART_SELECTORS) {
+                const chartDom = $(APP_CONFIG.CHART_SELECTORS[key]);
+                if (chartDom) EChartsInstances[key] = echarts.init(chartDom);
+            }
+        }
+        function disposeCharts() {
+            for (const key in EChartsInstances) {
+                if (EChartsInstances[key] && !EChartsInstances[key].isDisposed()) {
+                    EChartsInstances[key].dispose();
+                }
+            }
+        }
         // --- Data Export ---
         function exportDataToCSV() { /* ... Adjusted for 1 decimal place ... */
             const inputs = getCalculationInputs(); const data = performCalculations(inputs); let csvContent = '\ufeff'; csvContent += '车+摩意险成本测算结果汇总表\n\n'; csvContent += '指标分类,车险,摩意险,合计\n';
@@ -260,8 +281,37 @@
         }
 
         // --- Core Update Cycle & Event Listeners (mostly same) ---
-        function updateUI() { const inputs = getCalculationInputs(); const calculatedData = performCalculations(inputs); updateKPIs(calculatedData); updateAllCharts(calculatedData); }
-        function bindEventListeners() { DOMElements.themeToggleBtn.addEventListener('click', toggleTheme); DOMElements.openParametersBtn.addEventListener('click', () => toggleParametersDrawer(true)); DOMElements.closeParametersBtn.addEventListener('click', () => toggleParametersDrawer(false)); DOMElements.drawerBackdrop.addEventListener('click', () => toggleParametersDrawer(false)); DOMElements.showHelpBtn.addEventListener('click', () => toggleHelpModal(true)); DOMElements.closeHelpModalBtn.addEventListener('click', () => toggleHelpModal(false)); DOMElements.helpModal.addEventListener('click', (e) => { if (e.target === DOMElements.helpModal) toggleHelpModal(false); }); DOMElements.schemeSelector.addEventListener('click', handleSchemeChange); DOMElements.exportDataBtn.addEventListener('click', exportDataToCSV); DOMElements.analysisTabsContainer.addEventListener('click', handleAnalysisTabClick); for (const key in DOMElements.inputs) { DOMElements.inputs[key].addEventListener('focus', storeCurrentInputValues); DOMElements.inputs[key].addEventListener('input', updateUI); DOMElements.inputs[key].addEventListener('change', () => { highlightChangedParameters(); updateUI(); }); } window.addEventListener('resize', () => { for (const key in EChartsInstances) if (EChartsInstances[key] && typeof EChartsInstances[key].resize === 'function') EChartsInstances[key].resize(); }); }
+        function updateUI() {
+            const inputs = getCalculationInputs();
+            const calculatedData = performCalculations(inputs);
+            lastCalculatedData = calculatedData;
+            updateKPIs(calculatedData);
+            updateChartsForTab(getActiveTab(), calculatedData);
+        }
+        function bindEventListeners() {
+            DOMElements.themeToggleBtn.addEventListener('click', toggleTheme);
+            DOMElements.openParametersBtn.addEventListener('click', () => toggleParametersDrawer(true));
+            DOMElements.closeParametersBtn.addEventListener('click', () => toggleParametersDrawer(false));
+            DOMElements.drawerBackdrop.addEventListener('click', () => toggleParametersDrawer(false));
+            DOMElements.showHelpBtn.addEventListener('click', () => toggleHelpModal(true));
+            DOMElements.closeHelpModalBtn.addEventListener('click', () => toggleHelpModal(false));
+            DOMElements.helpModal.addEventListener('click', (e) => { if (e.target === DOMElements.helpModal) toggleHelpModal(false); });
+            DOMElements.schemeSelector.addEventListener('click', handleSchemeChange);
+            DOMElements.exportDataBtn.addEventListener('click', exportDataToCSV);
+            DOMElements.analysisTabsContainer.addEventListener('click', handleAnalysisTabClick);
+            const debouncedUpdate = debounce(updateUI, 300);
+            for (const key in DOMElements.inputs) {
+                DOMElements.inputs[key].addEventListener('focus', storeCurrentInputValues);
+                DOMElements.inputs[key].addEventListener('input', debouncedUpdate);
+                DOMElements.inputs[key].addEventListener('change', () => { highlightChangedParameters(); updateUI(); });
+            }
+            window.addEventListener('resize', () => {
+                for (const key in EChartsInstances) {
+                    if (EChartsInstances[key] && typeof EChartsInstances[key].resize === 'function') EChartsInstances[key].resize();
+                }
+            });
+            window.addEventListener('beforeunload', disposeCharts);
+        }
         
         // --- Initialization ---
         function init() { cacheDOMElements(); loadSavedTheme(); initCharts(); bindEventListeners(); storeCurrentInputValues(); applyScheme(DEFAULT_SCHEME_KEY); const defaultSchemeBtn = $(`#schemeSelector .btn[data-scheme="${DEFAULT_SCHEME_KEY}"]`); if (defaultSchemeBtn) defaultSchemeBtn.classList.add('is-active'); setActiveAnalysisTab(DEFAULT_ANALYSIS_TAB); }
