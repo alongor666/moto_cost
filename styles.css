@@ -152,6 +152,10 @@
                         background-color var(--transition-duration-normal), box-shadow var(--transition-duration-normal);
             display: flex; flex-direction: column;
         }
+        @media (max-width: 600px) {
+            .chart-card { min-height: 280px; }
+            :root { --font-size-chart-xaxis: 14px; --font-size-base: 14px; }
+        }
         .parameters-drawer.is-open { transform: translateX(0); }
         .parameters-drawer__header {
             display: flex; justify-content: space-between; align-items: center;
