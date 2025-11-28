@@ -13,9 +13,12 @@
     <div class="app-container">
         <div class="app-header-sticky">
             <header class="app-header">
-                <h1 class="app-title">摩托车成本模型</h1>
-                <div class="app-controls">
-                     <button class="theme-toggle-btn" id="themeToggleBtn" title="切换颜色模式">
+                <div class="app-title-group">
+                    <h1 class="app-title">摩托车成本模型</h1>
+                    <p class="app-subtitle">一站式测算保费、成本与盈利，让每次参数调整都清晰可见。</p>
+                </div>
+                <div class="app-controls" aria-label="全局快捷操作">
+                     <button class="theme-toggle-btn" id="themeToggleBtn" title="切换颜色模式" aria-live="polite">
                         <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                         <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                     </button>
@@ -37,7 +40,32 @@
                 </div>
             </header>
         </div>
+        <section class="context-panel" aria-label="全局状态概览">
+            <div class="context-pill">
+                <div class="pill-label">当前方案</div>
+                <div class="pill-value" id="activeSchemeLabel">方案C (保本)</div>
+            </div>
+            <div class="context-pill">
+                <div class="pill-label">界面主题</div>
+                <div class="pill-value" id="activeThemeLabel">深色模式</div>
+            </div>
+            <div class="context-pill context-pill--success">
+                <div class="pill-label">体验提示</div>
+                <div class="pill-value" id="insightSummary">实时测算已开启，调整参数即可秒级获得趋势。</div>
+            </div>
+        </section>
         <main class="main-view">
+            <section class="hero-insight" aria-label="核心解读">
+                <div>
+                    <p class="hero-label">智能洞察</p>
+                    <h2 class="hero-title" id="summaryHeadline">盈亏一目了然</h2>
+                    <p class="hero-subtitle" id="summarySubline">综合成本率与盈利表现会随参数变化即时刷新。</p>
+                </div>
+                <div class="hero-actions">
+                    <button class="btn btn--ghost" id="focusOnProfitBtn" aria-label="滚动到利润指标">聚焦利润</button>
+                    <button class="btn btn--primary" id="openParametersBtnSecondary" aria-label="展开参数抽屉">立即调参</button>
+                </div>
+            </section>
             <section class="kpi-zone">
                 <div class="kpi-card"><div class="kpi-card__label">总利润</div><div class="kpi-card__value" id="kpiTotalProfit">0<span class="unit">万元</span></div></div>
                 <div class="kpi-card"><div class="kpi-card__label">综合成本率</div><div class="kpi-card__value" id="kpiTotalCostRate">0<span class="unit">%</span></div></div>
