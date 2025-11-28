@@ -27,6 +27,8 @@
         // --- DOM Cache, Theme, Drawer, Modal, Scheme, Tabs (mostly same logic as before) ---
         function cacheDOMElements() { /* ... same as before ... */ 
             DOMElements.html = $('html'); DOMElements.themeToggleBtn = $('#themeToggleBtn'); DOMElements.parametersDrawer = $('#parametersDrawer'); DOMElements.openParametersBtn = $('#openParametersBtn'); DOMElements.closeParametersBtn = $('#closeParametersBtn'); DOMElements.drawerBackdrop = $('#drawerBackdrop'); DOMElements.helpModal = $('#indicatorHelpModal'); DOMElements.showHelpBtn = $('#showHelpBtn'); DOMElements.closeHelpModalBtn = $('#closeHelpModalBtn'); DOMElements.schemeSelector = $('#schemeSelector'); DOMElements.exportDataBtn = $('#exportDataBtn'); DOMElements.analysisTabsContainer = $('#analysisTabsContainer');
+            DOMElements.activeSchemeLabel = $('#activeSchemeLabel'); DOMElements.activeThemeLabel = $('#activeThemeLabel'); DOMElements.insightSummary = $('#insightSummary');
+            DOMElements.summaryHeadline = $('#summaryHeadline'); DOMElements.summarySubline = $('#summarySubline'); DOMElements.focusOnProfitBtn = $('#focusOnProfitBtn'); DOMElements.openParametersBtnSecondary = $('#openParametersBtnSecondary');
             DOMElements.inputs = {}; for (const key in APP_CONFIG.INPUT_SELECTORS) DOMElements.inputs[key] = $(APP_CONFIG.INPUT_SELECTORS[key]);
             DOMElements.kpis = {}; for (const key in APP_CONFIG.KPI_SELECTORS) DOMElements.kpis[key] = $(APP_CONFIG.KPI_SELECTORS[key]);
         }
@@ -37,7 +39,7 @@
         function toggleHelpModal(show) { if (show) { DOMElements.helpModal.classList.add('is-visible'); document.body.style.overflow = 'hidden'; } else { DOMElements.helpModal.classList.remove('is-visible'); if (!DOMElements.parametersDrawer.classList.contains('is-open')) { document.body.style.overflow = ''; } } }
         function storeCurrentInputValues() { currentInputValues = {}; for (const key in DOMElements.inputs) currentInputValues[key] = DOMElements.inputs[key].value; }
         function highlightChangedParameters() { for (const key in DOMElements.inputs) { const inputElement = DOMElements.inputs[key]; inputElement.classList.remove('form-field__input--highlight'); if (inputElement.value !== currentInputValues[key]) { inputElement.classList.add('form-field__input--highlight'); inputElement.addEventListener('animationend', () => inputElement.classList.remove('form-field__input--highlight'), { once: true }); } } }
-        function applyScheme(schemeKey) { storeCurrentInputValues(); const scheme = APP_CONFIG.SCHEMES[schemeKey]; if (!scheme || !scheme.params) return; for (const key in scheme.params) if (DOMElements.inputs[key]) DOMElements.inputs[key].value = scheme.params[key]; updateUI(); toggleParametersDrawer(true); requestAnimationFrame(() => requestAnimationFrame(highlightChangedParameters)); }
+        function applyScheme(schemeKey) { storeCurrentInputValues(); const scheme = APP_CONFIG.SCHEMES[schemeKey]; if (!scheme || !scheme.params) return; for (const key in scheme.params) if (DOMElements.inputs[key]) DOMElements.inputs[key].value = scheme.params[key]; updateUI(); toggleParametersDrawer(true); requestAnimationFrame(() => requestAnimationFrame(highlightChangedParameters)); setActiveSchemeLabel(schemeKey); }
         function handleSchemeChange(event) { const targetButton = event.target.closest('.btn'); if (!targetButton || !targetButton.dataset.scheme) return; const schemeKey = targetButton.dataset.scheme; applyScheme(schemeKey); $$('#schemeSelector .btn').forEach(btn => btn.classList.remove('is-active')); targetButton.classList.add('is-active'); }
         function handleAnalysisTabClick(event) {
             const targetButton = event.target.closest('.analysis-tab-btn');
@@ -57,6 +59,46 @@
             });
         }
         function setActiveAnalysisTab(tabKey) { const tabButton = $(`#analysisTabsContainer .analysis-tab-btn[data-tab="${tabKey}"]`); if (tabButton) tabButton.click(); }
+
+        function setActiveSchemeLabel(schemeKey) {
+            if (!DOMElements.activeSchemeLabel) return;
+            const scheme = APP_CONFIG.SCHEMES[schemeKey];
+            const label = scheme?.name || '自定义方案';
+            DOMElements.activeSchemeLabel.textContent = label;
+        }
+
+        function updateContextInsight(calculatedData) {
+            if (!calculatedData) return;
+            const profitIndex = APP_CONFIG.ABSOLUTE_CHART_INDICATORS.indexOf('PROFIT');
+            const edgeIndex = APP_CONFIG.ABSOLUTE_CHART_INDICATORS.indexOf('EDGE_CONTRIBUTION');
+            const tcrIndex = APP_CONFIG.RATE_CHART_INDICATORS.indexOf('TCR');
+            const profit = calculatedData.combined.absolute[profitIndex];
+            const edgeContribution = calculatedData.combined.absolute[edgeIndex];
+            const tcr = calculatedData.combined.rate[tcrIndex];
+
+            const isHealthy = profit >= 0 && tcr <= 1;
+            const headline = isHealthy ? '盈利区间健康' : '需要重点优化亏损';
+            const insight = isHealthy ? '策略表现稳定，可继续关注赔付率与费用波动。' : '建议优化赔付率、费用率或提升保费以回归盈利区间。';
+            const subline = `综合成本率 ${ (tcr * 100).toFixed(1) }% · 边际贡献 ${ edgeContribution.toFixed(1) } 万元 · 总利润 ${ profit.toFixed(1) } 万元`;
+
+            if (DOMElements.summaryHeadline) DOMElements.summaryHeadline.textContent = headline;
+            if (DOMElements.summarySubline) DOMElements.summarySubline.textContent = subline;
+            if (DOMElements.insightSummary) DOMElements.insightSummary.textContent = insight;
+        }
+
+        function updateThemeLabel() {
+            if (!DOMElements.activeThemeLabel) return;
+            const isDark = DOMElements.html.classList.contains('theme-dark');
+            DOMElements.activeThemeLabel.textContent = isDark ? '深色模式' : '浅色模式';
+        }
+
+        function focusOnProfitCard() {
+            const profitCard = DOMElements.kpis.totalProfit ? DOMElements.kpis.totalProfit.closest('.kpi-card') : null;
+            if (!profitCard) return;
+            profitCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            profitCard.classList.add('kpi-card--pulse');
+            profitCard.addEventListener('animationend', () => profitCard.classList.remove('kpi-card--pulse'), { once: true });
+        }
         
         // --- KPI Update (Adjusted for 1 decimal place) ---
         function updateKPIs(data) { 
@@ -287,10 +329,13 @@
             lastCalculatedData = calculatedData;
             updateKPIs(calculatedData);
             updateChartsForTab(getActiveTab(), calculatedData);
+            updateContextInsight(calculatedData);
+            updateThemeLabel();
         }
         function bindEventListeners() {
             DOMElements.themeToggleBtn.addEventListener('click', toggleTheme);
             DOMElements.openParametersBtn.addEventListener('click', () => toggleParametersDrawer(true));
+            if (DOMElements.openParametersBtnSecondary) DOMElements.openParametersBtnSecondary.addEventListener('click', () => toggleParametersDrawer(true));
             DOMElements.closeParametersBtn.addEventListener('click', () => toggleParametersDrawer(false));
             DOMElements.drawerBackdrop.addEventListener('click', () => toggleParametersDrawer(false));
             DOMElements.showHelpBtn.addEventListener('click', () => toggleHelpModal(true));
@@ -299,6 +344,7 @@
             DOMElements.schemeSelector.addEventListener('click', handleSchemeChange);
             DOMElements.exportDataBtn.addEventListener('click', exportDataToCSV);
             DOMElements.analysisTabsContainer.addEventListener('click', handleAnalysisTabClick);
+            if (DOMElements.focusOnProfitBtn) DOMElements.focusOnProfitBtn.addEventListener('click', focusOnProfitCard);
             const debouncedUpdate = debounce(updateUI, 300);
             for (const key in DOMElements.inputs) {
                 DOMElements.inputs[key].addEventListener('focus', storeCurrentInputValues);
