@@ -67,8 +67,8 @@
             DOMElements.activeSchemeLabel.textContent = label;
         }
 
-        function updateContextInsight(calculatedData) {
-            if (!calculatedData) return;
+        function updateContextInsight(calculatedData, breakEvenData) {
+            if (!calculatedData || !breakEvenData) return;
             const profitIndex = APP_CONFIG.ABSOLUTE_CHART_INDICATORS.indexOf('PROFIT');
             const edgeIndex = APP_CONFIG.ABSOLUTE_CHART_INDICATORS.indexOf('EDGE_CONTRIBUTION');
             const tcrIndex = APP_CONFIG.RATE_CHART_INDICATORS.indexOf('TCR');
@@ -76,14 +76,32 @@
             const edgeContribution = calculatedData.combined.absolute[edgeIndex];
             const tcr = calculatedData.combined.rate[tcrIndex];
 
-            const isHealthy = profit >= 0 && tcr <= 1;
-            const headline = isHealthy ? '盈利区间健康' : '需要重点优化亏损';
-            const insight = isHealthy ? '策略表现稳定，可继续关注赔付率与费用波动。' : '建议优化赔付率、费用率或提升保费以回归盈利区间。';
-            const subline = `综合成本率 ${ (tcr * 100).toFixed(1) }% · 边际贡献 ${ edgeContribution.toFixed(1) } 万元 · 总利润 ${ profit.toFixed(1) } 万元`;
+            // 获取当前赔付率
+            const inputs = getCalculationInputs();
+            const carLossRatio = inputs.carLossRatio * 100;
+            const motoLossRatio = inputs.motoLossRatio * 100;
+
+            // 动态生成散文式结论
+            const isHealthy = profit >= 0;
+            const headline = '盈亏平衡分析';
+
+            let insightText = `基于当前刚性成本配置（人力成本${(inputs.laborBaseRate * 100).toFixed(1)}%、固定运营成本${(inputs.fixedOperationRate * 100).toFixed(2)}%、车险手续费${(inputs.carHandlingFeeRate * 100).toFixed(1)}%、车险销推${(inputs.carSalesPromotionRate * 100).toFixed(1)}%、摩意险业务费用${((inputs.motoWithCarFeeRate * 100 + inputs.motoCardFeeRate * 100) / 2).toFixed(1)}%等），摩意险保费配比为${(breakEvenData.motoPremiumRatio * 100).toFixed(1)}%。`;
+
+            insightText += ` 要实现盈亏平衡，在保持摩意险赔付率${motoLossRatio.toFixed(1)}%不变的情况下，车险赔付率需控制在${breakEvenData.carBreakEvenLossRatio}%以内；`;
+
+            insightText += ` 若车险赔付率固定为${carLossRatio.toFixed(1)}%，摩意险赔付率需控制在${breakEvenData.motoBreakEvenLossRatio}%以内。`;
+
+            insightText += ` 当前配置下，车险赔付率每上浮1个百分点将减少利润${Math.abs(breakEvenData.carSensitivity)}万元；摩意险赔付率每上浮1个百分点将减少利润${Math.abs(breakEvenData.motoSensitivity)}万元；若两者同时上浮1个百分点，总利润将减少${Math.abs(breakEvenData.bothSensitivity)}万元。`;
+
+            const statusText = isHealthy
+                ? `当前状态为盈利${profit.toFixed(1)}万元，综合成本率${(tcr * 100).toFixed(1)}%，表现良好。`
+                : `当前状态为亏损${Math.abs(profit).toFixed(1)}万元，综合成本率${(tcr * 100).toFixed(1)}%，需优化赔付率控制。`;
+
+            insightText += ` ${statusText}`;
 
             if (DOMElements.summaryHeadline) DOMElements.summaryHeadline.textContent = headline;
-            if (DOMElements.summarySubline) DOMElements.summarySubline.textContent = subline;
-            if (DOMElements.insightSummary) DOMElements.insightSummary.textContent = insight;
+            if (DOMElements.summarySubline) DOMElements.summarySubline.textContent = insightText;
+            if (DOMElements.insightSummary) DOMElements.insightSummary.textContent = `边际贡献${edgeContribution.toFixed(1)}万元 · 总利润${profit.toFixed(1)}万元`;
         }
 
         function updateThemeLabel() {
@@ -124,6 +142,45 @@
                 laborBaseRate: getInputValueAsRate('laborBaseRate'), fixedOperationRate: getInputValueAsRate('fixedOperationRate'),
             };
         }
+        // 盈亏平衡与敏感性分析计算
+        function calculateBreakEvenAnalysis(inputs) {
+            const { carPremium, carLossRatio, carHandlingFeeRate, carSalesPromotionRate, carStandardPremiumRatio, carAveragePremium, motoAveragePremium, motoQuantity, motoLossRatio, motoWithCarFeeRate, motoCardFeeRate, motoSalesPromotionRate, motoStandardPremiumRatio, laborBaseRate, fixedOperationRate } = inputs;
+
+            // 计算保费配比
+            const motoPremiumRatio = carAveragePremium > 0 ? (motoAveragePremium * motoQuantity) / carAveragePremium : 0;
+            const motoHandlingFeeRate = (motoWithCarFeeRate + motoCardFeeRate) / 2;
+
+            // 固定成本计算
+            const carFixedCosts = carHandlingFeeRate + carSalesPromotionRate + (carStandardPremiumRatio * laborBaseRate);
+            const motoFixedCosts = motoHandlingFeeRate + motoSalesPromotionRate + (motoStandardPremiumRatio * laborBaseRate);
+
+            // 场景1: 固定摩意险赔付率，计算车险赔付率平衡点
+            // 公式: (车险赔付率 + carFixedCosts) + motoPremiumRatio × (motoLossRatio + motoFixedCosts) = (1 + motoPremiumRatio) × (1 - fixedOperationRate)
+            const carBreakEvenLossRatio = ((1 + motoPremiumRatio) * (1 - fixedOperationRate) - motoPremiumRatio * (motoLossRatio + motoFixedCosts) - carFixedCosts) * 100;
+
+            // 场景2: 固定车险赔付率，计算摩意险赔付率平衡点
+            // 公式: (carLossRatio + carFixedCosts) + motoPremiumRatio × (摩意险赔付率 + motoFixedCosts) = (1 + motoPremiumRatio) × (1 - fixedOperationRate)
+            const motoBreakEvenLossRatio = (((1 + motoPremiumRatio) * (1 - fixedOperationRate) - (carLossRatio + carFixedCosts)) / motoPremiumRatio - motoFixedCosts) * 100;
+
+            // 场景3: 车险赔付率上浮1%的利润影响
+            const carSensitivity = -carPremium * 0.01; // 万元
+
+            // 场景4: 摩意险赔付率上浮1%的利润影响
+            const motoSensitivity = -carPremium * motoPremiumRatio * 0.01; // 万元
+
+            // 场景5: 两者都上浮1%的利润影响
+            const bothSensitivity = carSensitivity + motoSensitivity; // 万元
+
+            return {
+                carBreakEvenLossRatio: parseFloat(carBreakEvenLossRatio.toFixed(1)),
+                motoBreakEvenLossRatio: parseFloat(motoBreakEvenLossRatio.toFixed(1)),
+                carSensitivity: parseFloat(carSensitivity.toFixed(1)),
+                motoSensitivity: parseFloat(motoSensitivity.toFixed(1)),
+                bothSensitivity: parseFloat(bothSensitivity.toFixed(1)),
+                motoPremiumRatio: parseFloat(motoPremiumRatio.toFixed(4))
+            };
+        }
+
         function performCalculations(inputs) { /* ... */
              const { carPremium, carLossRatio, carHandlingFeeRate, carSalesPromotionRate, carStandardPremiumRatio, carAveragePremium, motoAveragePremium, motoQuantity, motoLossRatio, motoWithCarFeeRate, motoCardFeeRate, motoSalesPromotionRate, motoStandardPremiumRatio, laborBaseRate, fixedOperationRate } = inputs;
             // 计算保费配比和摩意险保单获取成本率
@@ -190,86 +247,229 @@
 
         function createAbsoluteChartOption(data, chartTitle, unit = '万元') {
             const themeOpts = getChartThemeOptions();
-            const indicators = APP_CONFIG.ABSOLUTE_CHART_INDICATORS;
-            const xAxisData = indicators.map(key => APP_CONFIG.INDICATOR_CONFIG[key].label);
+            // 瀑布图数据结构：保费, -赔款, -手续费, -销推, -人力, =边际贡献, -固定成本, =利润
+            // data数组: [保费, 赔款, 手续费, 销推, 人力, 边际贡献, 利润]
+            const [premium, loss, handlingFee, salesPromotion, laborCost, edgeContribution, profit] = data.map(v => parseFloat(v.toFixed(1)));
 
-            const seriesData = data.map((value, index) => {
-                const indicatorKey = indicators[index];
-                const config = APP_CONFIG.INDICATOR_CONFIG[indicatorKey];
-                const val = parseFloat(value.toFixed(1)); // Store with 1 decimal for consistency
-                
-                let itemColor = determineColor(val, config, themeOpts);
-                if ((itemColor === themeOpts.colorNeutral && config.colorKey !== 'neutral') || (itemColor === themeOpts.colorAccent && config.colorKey !== 'accent' && config.colorKey !== 'conditional')) {
-                    itemColor = themeOpts.colorPalette[index % themeOpts.colorPalette.length];
-                }
-                let labelColor = itemColor;
+            // 计算固定成本 = 边际贡献 - 利润
+            const fixedCost = parseFloat((edgeContribution - profit).toFixed(1));
 
-                return {
-                    value: val, itemStyle: { ...themeOpts.seriesBase.itemStyle, color: itemColor },
-                    label: { 
-                        ...themeOpts.seriesBase.label, 
-                        color: labelColor, 
-                        position: val < 0 ? 'bottom' : 'top', 
-                        distance: val < 0 ? 15 : 8, // 增加负值标签的距离
-                        padding: [5, 5, 5, 5] // 增加内边距
-                    }
-                };
+            // 瀑布图X轴标签
+            const xAxisData = ['保费', '赔款', '手续费', '销推费用', '人力成本', '边际贡献', '固定成本', '利润'];
+
+            // 计算累计值（用于透明助手柱）
+            let cumulative = 0;
+            const helpers = [];
+            const values = [];
+            const colors = [];
+
+            // 1. 保费（起点）
+            helpers.push(0);
+            values.push(premium);
+            cumulative = premium;
+            colors.push(themeOpts.colorNeutral);
+
+            // 2-5. 成本项（减项）
+            const costs = [loss, handlingFee, salesPromotion, laborCost];
+            costs.forEach(cost => {
+                helpers.push(cumulative - cost);
+                values.push(cost);
+                cumulative -= cost;
+                colors.push(themeOpts.colorNegative);
             });
+
+            // 6. 边际贡献（中间点）
+            helpers.push(0);
+            values.push(edgeContribution);
+            colors.push(edgeContribution >= 0 ? themeOpts.colorPositive : themeOpts.colorNegative);
+
+            // 7. 固定成本（减项）
+            helpers.push(cumulative - fixedCost);
+            values.push(fixedCost);
+            cumulative -= fixedCost;
+            colors.push(themeOpts.colorNegative);
+
+            // 8. 利润（终点）
+            helpers.push(0);
+            values.push(profit);
+            colors.push(profit >= 0 ? themeOpts.colorPositive : themeOpts.colorNegative);
 
             return {
                 title: { ...themeOpts.title, text: chartTitle },
-                grid: themeOpts.grid, textStyle: themeOpts.textStyle, tooltip: { ...themeOpts.tooltip, valueFormatter: value => `${value != null ? parseFloat(value).toFixed(1) : 'N/A'} ${unit}` },
-                xAxis: { ...themeOpts.xAxis, data: xAxisData, axisLabel: {...themeOpts.xAxis.axisLabel, color: (value, index) => seriesData[index].label.color } },
-                yAxis: themeOpts.yAxis, 
-                series: [{ ...themeOpts.seriesBase, data: seriesData }]
+                grid: themeOpts.grid,
+                textStyle: themeOpts.textStyle,
+                tooltip: {
+                    ...themeOpts.tooltip,
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' },
+                    formatter: (params) => {
+                        const item = params[1]; // values series
+                        const name = item.axisValue;
+                        const value = parseFloat(item.value).toFixed(1);
+                        return `${name}<br/>${value} ${unit}`;
+                    }
+                },
+                xAxis: { ...themeOpts.xAxis, data: xAxisData },
+                yAxis: themeOpts.yAxis,
+                series: [
+                    {
+                        name: '辅助',
+                        type: 'bar',
+                        stack: 'total',
+                        itemStyle: { color: 'transparent' },
+                        emphasis: { itemStyle: { color: 'transparent' } },
+                        data: helpers,
+                        animation: false
+                    },
+                    {
+                        name: '数值',
+                        type: 'bar',
+                        stack: 'total',
+                        barWidth: '50%',
+                        itemStyle: {
+                            borderRadius: [5, 5, 0, 0]
+                        },
+                        label: {
+                            show: true,
+                            position: 'top',
+                            fontFamily: themeOpts.textStyle.fontFamily,
+                            fontSize: parseFloat(getCssVariable('--font-size-chart-xaxis')),
+                            fontWeight: getCssVariable('--font-weight-bold'),
+                            distance: 8,
+                            padding: [5, 5, 5, 5],
+                            formatter: (params) => parseFloat(params.value).toFixed(1)
+                        },
+                        data: values.map((val, idx) => ({
+                            value: val,
+                            itemStyle: { color: colors[idx] },
+                            label: { color: colors[idx] }
+                        }))
+                    }
+                ]
             };
         }
 
         function createRateChartOption(data, chartTitle) {
             const themeOpts = getChartThemeOptions();
-            const indicators = APP_CONFIG.RATE_CHART_INDICATORS;
-            const xAxisData = indicators.map(key => APP_CONFIG.INDICATOR_CONFIG[key].label);
+            // 瀑布图数据结构（比率）: data = [综合成本率, 变动成本率, 赔付率, 手续费率, 销推费率, 人力成本率, 边际贡献率]
+            const [totalCostRate, variableCostRate, lossRatio, handlingFeeRatio, salesPromotionRatio, laborCostRatio, edgeContributionRatio] = data;
 
-            const seriesData = data.map((value, index) => {
-                const indicatorKey = indicators[index];
-                const config = APP_CONFIG.INDICATOR_CONFIG[indicatorKey];
-                const valPct = parseFloat((value * 100).toFixed(1)); // Store with 1 decimal
-                
-                let itemColor = determineColor(value, config, themeOpts);
-                if ((itemColor === themeOpts.colorNeutral && config.colorKey !== 'neutral') || (itemColor === themeOpts.colorAccent && config.colorKey !== 'accent' && config.colorKey !== 'conditional')) {
-                    itemColor = themeOpts.colorPalette[index % themeOpts.colorPalette.length];
-                }
-                let labelColor = itemColor;
+            // 转换为百分比
+            const lossRatioPct = parseFloat((lossRatio * 100).toFixed(1));
+            const handlingFeeRatioPct = parseFloat((handlingFeeRatio * 100).toFixed(1));
+            const salesPromotionRatioPct = parseFloat((salesPromotionRatio * 100).toFixed(1));
+            const laborCostRatioPct = parseFloat((laborCostRatio * 100).toFixed(1));
+            const variableCostRatePct = parseFloat((variableCostRate * 100).toFixed(1));
+            const fixedCostRatePct = parseFloat(((totalCostRate - variableCostRate) * 100).toFixed(1));
+            const totalCostRatePct = parseFloat((totalCostRate * 100).toFixed(1));
+            const profitRatePct = parseFloat(((1 - totalCostRate) * 100).toFixed(1));
 
-                return {
-                    value: valPct, itemStyle: { ...themeOpts.seriesBase.itemStyle, color: itemColor },
-                    label: {
-                        ...themeOpts.seriesBase.label,
-                        color: labelColor,
-                        position: valPct < 0 && config.positiveGood ? 'bottom' : 'top',
-                        distance: valPct < 0 && config.positiveGood ? 15 : 8, // 增加负值标签的距离
-                        formatter: (params) => `${parseFloat(params.value).toFixed(1)}%`,
-                        padding: [5, 5, 5, 5] // 增加内边距
-                    }
-                };
+            // 瀑布图X轴标签
+            const xAxisData = ['保费基准', '赔付率', '手续费率', '销推费率', '人力成本率', '变动成本率', '固定成本率', '综合成本率', '利润率'];
+
+            // 计算累计值
+            let cumulative = 100; // 从100%开始
+            const helpers = [];
+            const values = [];
+            const colors = [];
+
+            // 1. 保费基准（100%）
+            helpers.push(0);
+            values.push(100);
+            colors.push(themeOpts.colorNeutral);
+
+            // 2-5. 成本率项（减项）
+            const costs = [lossRatioPct, handlingFeeRatioPct, salesPromotionRatioPct, laborCostRatioPct];
+            costs.forEach(cost => {
+                helpers.push(cumulative - cost);
+                values.push(cost);
+                cumulative -= cost;
+                colors.push(themeOpts.colorNegative);
             });
-            
+
+            // 6. 变动成本率（累计点）
+            helpers.push(0);
+            values.push(variableCostRatePct);
+            colors.push(themeOpts.colorNeutral);
+
+            // 7. 固定成本率（减项）
+            helpers.push(cumulative - fixedCostRatePct);
+            values.push(fixedCostRatePct);
+            cumulative -= fixedCostRatePct;
+            colors.push(themeOpts.colorNegative);
+
+            // 8. 综合成本率（累计点）
+            helpers.push(0);
+            values.push(totalCostRatePct);
+            colors.push(totalCostRatePct <= 100 ? themeOpts.colorNeutral : themeOpts.colorNegative);
+
+            // 9. 利润率（剩余）
+            helpers.push(0);
+            values.push(profitRatePct);
+            colors.push(profitRatePct >= 0 ? themeOpts.colorPositive : themeOpts.colorNegative);
+
             return {
                 title: { ...themeOpts.title, text: chartTitle },
-                grid: themeOpts.grid, textStyle: themeOpts.textStyle, tooltip: { ...themeOpts.tooltip, valueFormatter: value => `${value != null ? parseFloat(value).toFixed(1) : 'N/A'}%` },
-                xAxis: { ...themeOpts.xAxis, data: xAxisData, axisLabel: {...themeOpts.xAxis.axisLabel, color: (value, index) => seriesData[index].label.color } },
+                grid: themeOpts.grid,
+                textStyle: themeOpts.textStyle,
+                tooltip: {
+                    ...themeOpts.tooltip,
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' },
+                    formatter: (params) => {
+                        const item = params[1]; // values series
+                        const name = item.axisValue;
+                        const value = parseFloat(item.value).toFixed(1);
+                        return `${name}<br/>${value}%`;
+                    }
+                },
+                xAxis: { ...themeOpts.xAxis, data: xAxisData },
                 yAxis: themeOpts.yAxis,
-                series: [{ ...themeOpts.seriesBase, data: seriesData }]
+                series: [
+                    {
+                        name: '辅助',
+                        type: 'bar',
+                        stack: 'total',
+                        itemStyle: { color: 'transparent' },
+                        emphasis: { itemStyle: { color: 'transparent' } },
+                        data: helpers,
+                        animation: false
+                    },
+                    {
+                        name: '数值',
+                        type: 'bar',
+                        stack: 'total',
+                        barWidth: '50%',
+                        itemStyle: {
+                            borderRadius: [5, 5, 0, 0]
+                        },
+                        label: {
+                            show: true,
+                            position: 'top',
+                            fontFamily: themeOpts.textStyle.fontFamily,
+                            fontSize: parseFloat(getCssVariable('--font-size-chart-xaxis')),
+                            fontWeight: getCssVariable('--font-weight-bold'),
+                            distance: 8,
+                            padding: [5, 5, 5, 5],
+                            formatter: (params) => `${parseFloat(params.value).toFixed(1)}%`
+                        },
+                        data: values.map((val, idx) => ({
+                            value: val,
+                            itemStyle: { color: colors[idx] },
+                            label: { color: colors[idx] }
+                        }))
+                    }
+                ]
             };
         }
 
         const CHART_META = {
-            carAbsolute: { getter: d => d.car.absolute, title: '关键指标金额 (万元)', option: createAbsoluteChartOption },
-            carRate: { getter: d => d.car.rate, title: '核心效能比率 (%)', option: createRateChartOption },
-            motoAbsolute: { getter: d => d.moto.absolute, title: '关键指标金额 (万元)', option: createAbsoluteChartOption },
-            motoRate: { getter: d => d.moto.rate, title: '核心效能比率 (%)', option: createRateChartOption },
-            combinedAbsolute: { getter: d => d.combined.absolute, title: '关键指标金额 (万元)', option: createAbsoluteChartOption },
-            combinedRate: { getter: d => d.combined.rate, title: '核心效能比率 (%)', option: createRateChartOption }
+            carAbsolute: { getter: d => d.car.absolute, title: '车险成本瀑布分析 (万元)', option: createAbsoluteChartOption },
+            carRate: { getter: d => d.car.rate, title: '车险成本率瀑布分析 (%)', option: createRateChartOption },
+            motoAbsolute: { getter: d => d.moto.absolute, title: '摩意险成本瀑布分析 (万元)', option: createAbsoluteChartOption },
+            motoRate: { getter: d => d.moto.rate, title: '摩意险成本率瀑布分析 (%)', option: createRateChartOption },
+            combinedAbsolute: { getter: d => d.combined.absolute, title: '综合成本瀑布分析 (万元)', option: createAbsoluteChartOption },
+            combinedRate: { getter: d => d.combined.rate, title: '综合成本率瀑布分析 (%)', option: createRateChartOption }
         };
         const TAB_CHARTS = {
             car: ['carAbsolute', 'carRate'],
@@ -305,20 +505,100 @@
             }
         }
         // --- Data Export ---
-        function exportDataToCSV() { /* ... Adjusted for 1 decimal place ... */
-            const inputs = getCalculationInputs(); const data = performCalculations(inputs); let csvContent = '\ufeff'; csvContent += '车+摩意险成本测算结果汇总表\n\n'; csvContent += '指标分类,车险,摩意险,合计\n';
-            const indicatorMap = [ { name: '保费(万元)', absoluteIndex: 0 }, { name: '赔款(万元)', absoluteIndex: 1 }, { name: '手续费(万元)', absoluteIndex: 2 }, { name: '销推费用(万元)', absoluteIndex: 3 }, { name: '人力成本(万元)', absoluteIndex: 4 }, { name: '边际贡献额(万元)', absoluteIndex: 5 }, { name: '利润(万元)', absoluteIndex: 6 }, { name: '综合成本率(%)', rateIndex: 0, isPercent: true }, { name: '变动成本率(%)', rateIndex: 1, isPercent: true }, { name: '赔付率(%)', rateIndex: 2, isPercent: true }, { name: '边际贡献率(%)', rateIndex: 6, isPercent: true } ];
-            function getValue(sectionData, indicator) { 
-                if (indicator.absoluteIndex !== undefined) return sectionData.absolute[indicator.absoluteIndex].toFixed(1); 
-                if (indicator.rateIndex !== undefined) { const rateArray = sectionData === data.combined.rate ? sectionData : sectionData.rate; return (rateArray[indicator.rateIndex] * 100).toFixed(1); } return ''; 
+        function exportDataToCSV() {
+            const inputs = getCalculationInputs();
+            const data = performCalculations(inputs);
+            const breakEvenData = calculateBreakEvenAnalysis(inputs);
+
+            let csvContent = '\ufeff';
+            csvContent += '车+摩意险成本测算结果汇总表\n\n';
+
+            // 第一部分：基本指标
+            csvContent += '一、基本指标\n';
+            csvContent += '指标分类,车险,摩意险,合计\n';
+            const indicatorMap = [
+                { name: '保费(万元)', absoluteIndex: 0 },
+                { name: '赔款(万元)', absoluteIndex: 1 },
+                { name: '手续费(万元)', absoluteIndex: 2 },
+                { name: '销推费用(万元)', absoluteIndex: 3 },
+                { name: '人力成本(万元)', absoluteIndex: 4 },
+                { name: '边际贡献额(万元)', absoluteIndex: 5 },
+                { name: '利润(万元)', absoluteIndex: 6 },
+                { name: '综合成本率(%)', rateIndex: 0, isPercent: true },
+                { name: '变动成本率(%)', rateIndex: 1, isPercent: true },
+                { name: '赔付率(%)', rateIndex: 2, isPercent: true },
+                { name: '边际贡献率(%)', rateIndex: 6, isPercent: true }
+            ];
+
+            function getValue(sectionData, indicator) {
+                if (indicator.absoluteIndex !== undefined) return sectionData.absolute[indicator.absoluteIndex].toFixed(1);
+                if (indicator.rateIndex !== undefined) { const rateArray = sectionData === data.combined.rate ? sectionData : sectionData.rate; return (rateArray[indicator.rateIndex] * 100).toFixed(1); }
+                return '';
             }
-            indicatorMap.forEach(indicator => { const row = [indicator.name, getValue(data.car, indicator), getValue(data.moto, indicator), getValue(indicator.isPercent ? data.combined.rate : data.combined, indicator)]; csvContent += row.join(',') + '\n'; });
+
+            indicatorMap.forEach(indicator => {
+                const row = [indicator.name, getValue(data.car, indicator), getValue(data.moto, indicator), getValue(indicator.isPercent ? data.combined.rate : data.combined, indicator)];
+                csvContent += row.join(',') + '\n';
+            });
+
+            // 第二部分：瀑布图中间累计值（绝对值）
+            csvContent += '\n二、成本瀑布分析(绝对值-万元)\n';
+            csvContent += '瀑布节点,车险,摩意险,合计\n';
+
+            // 计算固定成本
+            const carFixedCost = parseFloat((data.car.absolute[5] - data.car.absolute[6]).toFixed(1));
+            const motoFixedCost = parseFloat((data.moto.absolute[5] - data.moto.absolute[6]).toFixed(1));
+            const totalFixedCost = parseFloat((data.combined.absolute[5] - data.combined.absolute[6]).toFixed(1));
+
+            const waterfallAbsolute = [
+                ['保费', data.car.absolute[0].toFixed(1), data.moto.absolute[0].toFixed(1), data.combined.absolute[0].toFixed(1)],
+                ['赔款', data.car.absolute[1].toFixed(1), data.moto.absolute[1].toFixed(1), data.combined.absolute[1].toFixed(1)],
+                ['手续费', data.car.absolute[2].toFixed(1), data.moto.absolute[2].toFixed(1), data.combined.absolute[2].toFixed(1)],
+                ['销推费用', data.car.absolute[3].toFixed(1), data.moto.absolute[3].toFixed(1), data.combined.absolute[3].toFixed(1)],
+                ['人力成本', data.car.absolute[4].toFixed(1), data.moto.absolute[4].toFixed(1), data.combined.absolute[4].toFixed(1)],
+                ['边际贡献', data.car.absolute[5].toFixed(1), data.moto.absolute[5].toFixed(1), data.combined.absolute[5].toFixed(1)],
+                ['固定成本', carFixedCost.toFixed(1), motoFixedCost.toFixed(1), totalFixedCost.toFixed(1)],
+                ['利润', data.car.absolute[6].toFixed(1), data.moto.absolute[6].toFixed(1), data.combined.absolute[6].toFixed(1)]
+            ];
+            waterfallAbsolute.forEach(row => csvContent += row.join(',') + '\n');
+
+            // 第三部分：瀑布图中间累计值（比率）
+            csvContent += '\n三、成本瀑布分析(比率-%)\n';
+            csvContent += '瀑布节点,车险,摩意险,合计\n';
+
+            const carFixedCostRate = ((data.car.rate[0] - data.car.rate[1]) * 100).toFixed(1);
+            const motoFixedCostRate = ((data.moto.rate[0] - data.moto.rate[1]) * 100).toFixed(1);
+            const totalFixedCostRate = ((data.combined.rate[0] - data.combined.rate[1]) * 100).toFixed(1);
+
+            const waterfallRate = [
+                ['保费基准', '100.0', '100.0', '100.0'],
+                ['赔付率', (data.car.rate[2] * 100).toFixed(1), (data.moto.rate[2] * 100).toFixed(1), (data.combined.rate[2] * 100).toFixed(1)],
+                ['手续费率', (data.car.rate[3] * 100).toFixed(1), (data.moto.rate[3] * 100).toFixed(1), (data.combined.rate[3] * 100).toFixed(1)],
+                ['销推费率', (data.car.rate[4] * 100).toFixed(1), (data.moto.rate[4] * 100).toFixed(1), (data.combined.rate[4] * 100).toFixed(1)],
+                ['人力成本率', (data.car.rate[5] * 100).toFixed(1), (data.moto.rate[5] * 100).toFixed(1), (data.combined.rate[5] * 100).toFixed(1)],
+                ['变动成本率', (data.car.rate[1] * 100).toFixed(1), (data.moto.rate[1] * 100).toFixed(1), (data.combined.rate[1] * 100).toFixed(1)],
+                ['固定成本率', carFixedCostRate, motoFixedCostRate, totalFixedCostRate],
+                ['综合成本率', (data.car.rate[0] * 100).toFixed(1), (data.moto.rate[0] * 100).toFixed(1), (data.combined.rate[0] * 100).toFixed(1)],
+                ['利润率', ((1 - data.car.rate[0]) * 100).toFixed(1), ((1 - data.moto.rate[0]) * 100).toFixed(1), ((1 - data.combined.rate[0]) * 100).toFixed(1)]
+            ];
+            waterfallRate.forEach(row => csvContent += row.join(',') + '\n');
+
+            // 第四部分：盈亏平衡分析
+            csvContent += '\n四、盈亏平衡与敏感性分析\n';
+            csvContent += '分析项目,数值\n';
+            csvContent += `摩意险保费配比,${(breakEvenData.motoPremiumRatio * 100).toFixed(2)}%\n`;
+            csvContent += `车险赔付率平衡点(固定摩意险赔付率),${breakEvenData.carBreakEvenLossRatio}%\n`;
+            csvContent += `摩意险赔付率平衡点(固定车险赔付率),${breakEvenData.motoBreakEvenLossRatio}%\n`;
+            csvContent += `车险赔付率上浮1%利润影响,${breakEvenData.carSensitivity}万元\n`;
+            csvContent += `摩意险赔付率上浮1%利润影响,${breakEvenData.motoSensitivity}万元\n`;
+            csvContent += `两者同时上浮1%利润影响,${breakEvenData.bothSensitivity}万元\n`;
+
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             const now = new Date();
-            const dateStr = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}`;
-            link.download = `摩托车成本分析_${dateStr}_${String(exportCounter).padStart(3,'0')}.csv`;
+            const dateStr = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
+            link.download = `摩托车成本分析_${dateStr}_${String(exportCounter).padStart(3, '0')}.csv`;
             exportCounter++;
             document.body.appendChild(link);
             link.click();
@@ -329,10 +609,11 @@
         function updateUI() {
             const inputs = getCalculationInputs();
             const calculatedData = performCalculations(inputs);
+            const breakEvenData = calculateBreakEvenAnalysis(inputs);
             lastCalculatedData = calculatedData;
             updateKPIs(calculatedData);
             updateChartsForTab(getActiveTab(), calculatedData);
-            updateContextInsight(calculatedData);
+            updateContextInsight(calculatedData, breakEvenData);
             updateThemeLabel();
         }
         function bindEventListeners() {
