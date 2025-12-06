@@ -25,12 +25,72 @@
         };
 
         // --- DOM Cache, Theme, Drawer, Modal, Scheme, Tabs (mostly same logic as before) ---
-        function cacheDOMElements() { /* ... same as before ... */ 
+        function cacheDOMElements() { /* ... same as before ... */
             DOMElements.html = $('html'); DOMElements.themeToggleBtn = $('#themeToggleBtn'); DOMElements.parametersDrawer = $('#parametersDrawer'); DOMElements.openParametersBtn = $('#openParametersBtn'); DOMElements.closeParametersBtn = $('#closeParametersBtn'); DOMElements.drawerBackdrop = $('#drawerBackdrop'); DOMElements.helpModal = $('#indicatorHelpModal'); DOMElements.showHelpBtn = $('#showHelpBtn'); DOMElements.closeHelpModalBtn = $('#closeHelpModalBtn'); DOMElements.schemeSelector = $('#schemeSelector'); DOMElements.exportDataBtn = $('#exportDataBtn'); DOMElements.analysisTabsContainer = $('#analysisTabsContainer');
             DOMElements.activeSchemeLabel = $('#activeSchemeLabel'); DOMElements.activeThemeLabel = $('#activeThemeLabel'); DOMElements.insightSummary = $('#insightSummary');
             DOMElements.summaryHeadline = $('#summaryHeadline'); DOMElements.summarySubline = $('#summarySubline'); DOMElements.focusOnProfitBtn = $('#focusOnProfitBtn'); DOMElements.openParametersBtnSecondary = $('#openParametersBtnSecondary');
+            DOMElements.motoPremiumRatioDisplay = $('#motoPremiumRatioDisplay');
             DOMElements.inputs = {}; for (const key in APP_CONFIG.INPUT_SELECTORS) DOMElements.inputs[key] = $(APP_CONFIG.INPUT_SELECTORS[key]);
             DOMElements.kpis = {}; for (const key in APP_CONFIG.KPI_SELECTORS) DOMElements.kpis[key] = $(APP_CONFIG.KPI_SELECTORS[key]);
+        }
+
+        // --- 参数表格折叠展开功能 ---
+        function initParameterTableCollapse() {
+            const categoryRows = $$('.category-row.collapsible');
+            categoryRows.forEach(row => {
+                row.addEventListener('click', (e) => {
+                    const category = row.dataset.category;
+                    const isCollapsed = row.classList.contains('collapsed');
+
+                    if (isCollapsed) {
+                        // 展开
+                        row.classList.remove('collapsed');
+                        const relatedRows = $$(`.param-row[data-category="${category}"]`);
+                        relatedRows.forEach(r => r.classList.remove('hidden'));
+                    } else {
+                        // 折叠
+                        row.classList.add('collapsed');
+                        const relatedRows = $$(`.param-row[data-category="${category}"]`);
+                        relatedRows.forEach(r => r.classList.add('hidden'));
+                    }
+                });
+            });
+        }
+
+        // --- 输入自动跳转功能 ---
+        function setupInputAutoFocus() {
+            const paramInputs = $$('.param-input');
+            paramInputs.forEach(input => {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const nextInputId = input.dataset.next;
+                        if (nextInputId) {
+                            const nextInput = $(`#${nextInputId}`);
+                            if (nextInput) {
+                                nextInput.focus();
+                                nextInput.select();
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        // --- 更新摩意险保费配比显示 ---
+        function updateMotoPremiumRatioDisplay() {
+            if (!DOMElements.motoPremiumRatioDisplay) return;
+
+            const carAveragePremium = getInputValue('carAveragePremium');
+            const motoAveragePremium = getInputValue('motoAveragePremium');
+            const motoQuantity = getInputValue('motoQuantity');
+
+            if (carAveragePremium > 0) {
+                const motoPremiumRatio = (motoAveragePremium * motoQuantity) / carAveragePremium;
+                DOMElements.motoPremiumRatioDisplay.textContent = `${(motoPremiumRatio * 100).toFixed(2)}%`;
+            } else {
+                DOMElements.motoPremiumRatioDisplay.textContent = '--';
+            }
         }
         function applyTheme(theme) { DOMElements.html.classList.remove('theme-light', 'theme-dark'); DOMElements.html.classList.add(`theme-${theme}`); localStorage.setItem(APP_CONFIG.THEME_STORAGE_KEY, theme); updateUI(); }
         function toggleTheme() { const currentTheme = DOMElements.html.classList.contains('theme-dark') ? 'dark' : 'light'; applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
@@ -615,6 +675,7 @@
             updateChartsForTab(getActiveTab(), calculatedData);
             updateContextInsight(calculatedData, breakEvenData);
             updateThemeLabel();
+            updateMotoPremiumRatioDisplay();
         }
         function bindEventListeners() {
             DOMElements.themeToggleBtn.addEventListener('click', toggleTheme);
@@ -644,7 +705,19 @@
         }
         
         // --- Initialization ---
-        function init() { cacheDOMElements(); loadSavedTheme(); initCharts(); bindEventListeners(); storeCurrentInputValues(); applyScheme(DEFAULT_SCHEME_KEY); const defaultSchemeBtn = $(`#schemeSelector .btn[data-scheme="${DEFAULT_SCHEME_KEY}"]`); if (defaultSchemeBtn) defaultSchemeBtn.classList.add('is-active'); setActiveAnalysisTab(DEFAULT_ANALYSIS_TAB); }
+        function init() {
+            cacheDOMElements();
+            loadSavedTheme();
+            initCharts();
+            initParameterTableCollapse();
+            setupInputAutoFocus();
+            bindEventListeners();
+            storeCurrentInputValues();
+            applyScheme(DEFAULT_SCHEME_KEY);
+            const defaultSchemeBtn = $(`#schemeSelector .btn[data-scheme="${DEFAULT_SCHEME_KEY}"]`);
+            if (defaultSchemeBtn) defaultSchemeBtn.classList.add('is-active');
+            setActiveAnalysisTab(DEFAULT_ANALYSIS_TAB);
+        }
         return { init };
     })();
     document.addEventListener('DOMContentLoaded', CostInsightPro.init);
