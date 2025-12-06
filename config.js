@@ -24,10 +24,10 @@ const APP_CONFIG = {
     ABSOLUTE_CHART_INDICATORS: ['PREMIUM', 'LOSS', 'HANDLING_FEE', 'SALES_PROMOTION', 'LABOR_COST', 'EDGE_CONTRIBUTION', 'PROFIT'],
     RATE_CHART_INDICATORS: ['TCR', 'VCR', 'LOSS_RATIO', 'HANDLING_FEE_RATIO', 'SALES_PROMOTION_RATIO', 'LABOR_COST_RATIO', 'EDGE_CONTRIBUTION_RATIO'],
     SCHEMES: {
-        '150': { name: '方案A', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1200, carLossRatio: 150, carHandlingFeeRate: 0, carSalesPromotionRate: 0.15, carStandardPremiumRatio: 0.5, motoPremiumRatio: 1.75, motoLossRatio: 4, motoHandlingFeeRate: 66.1, motoSalesPromotionRate: 0.74, motoStandardPremiumRatio: 1.8 }},
-        '135': { name: '方案B', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1200, carLossRatio: 135, carHandlingFeeRate: 0, carSalesPromotionRate: 0.15, carStandardPremiumRatio: 0.5, motoPremiumRatio: 1.75, motoLossRatio: 4, motoHandlingFeeRate: 66.1, motoSalesPromotionRate: 0.74, motoStandardPremiumRatio: 1.8 }},
-        '120.8': { name: '方案C (保本)', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1200, carLossRatio: 120.8, carHandlingFeeRate: 0, carSalesPromotionRate: 0.15, carStandardPremiumRatio: 0.5, motoPremiumRatio: 1.75, motoLossRatio: 4, motoHandlingFeeRate: 66.1, motoSalesPromotionRate: 0.74, motoStandardPremiumRatio: 1.8 }},
-        '110': { name: '方案D', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1200, carLossRatio: 110, carHandlingFeeRate: 0, carSalesPromotionRate: 0.15, carStandardPremiumRatio: 0.5, motoPremiumRatio: 1.75, motoLossRatio: 4, motoHandlingFeeRate: 66.1, motoSalesPromotionRate: 0.74, motoStandardPremiumRatio: 1.8 }}
+        '150': { name: '方案A', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1200, carLossRatio: 150, carHandlingFeeRate: 0, carSalesPromotionRate: 0.15, carStandardPremiumRatio: 0.5, carAveragePremium: 300, motoAveragePremium: 100, motoQuantity: 5.25, motoLossRatio: 4, motoWithCarFeeRate: 60, motoCardFeeRate: 72.2, motoSalesPromotionRate: 0.74, motoStandardPremiumRatio: 1.8 }},
+        '135': { name: '方案B', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1200, carLossRatio: 135, carHandlingFeeRate: 0, carSalesPromotionRate: 0.15, carStandardPremiumRatio: 0.5, carAveragePremium: 300, motoAveragePremium: 100, motoQuantity: 5.25, motoLossRatio: 4, motoWithCarFeeRate: 60, motoCardFeeRate: 72.2, motoSalesPromotionRate: 0.74, motoStandardPremiumRatio: 1.8 }},
+        '120.8': { name: '方案C (保本)', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1200, carLossRatio: 120.8, carHandlingFeeRate: 0, carSalesPromotionRate: 0.15, carStandardPremiumRatio: 0.5, carAveragePremium: 300, motoAveragePremium: 100, motoQuantity: 5.25, motoLossRatio: 4, motoWithCarFeeRate: 60, motoCardFeeRate: 72.2, motoSalesPromotionRate: 0.74, motoStandardPremiumRatio: 1.8 }},
+        '110': { name: '方案D', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1200, carLossRatio: 110, carHandlingFeeRate: 0, carSalesPromotionRate: 0.15, carStandardPremiumRatio: 0.5, carAveragePremium: 300, motoAveragePremium: 100, motoQuantity: 5.25, motoLossRatio: 4, motoWithCarFeeRate: 60, motoCardFeeRate: 72.2, motoSalesPromotionRate: 0.74, motoStandardPremiumRatio: 1.8 }}
     },
     INPUT_SELECTORS: {
         laborBaseRate: '#laborBaseRate',
@@ -37,9 +37,12 @@ const APP_CONFIG = {
         carHandlingFeeRate: '#carHandlingFeeRate',
         carSalesPromotionRate: '#carSalesPromotionRate',
         carStandardPremiumRatio: '#carStandardPremiumRatio',
-        motoPremiumRatio: '#motoPremiumRatio',
+        carAveragePremium: '#carAveragePremium',
+        motoAveragePremium: '#motoAveragePremium',
+        motoQuantity: '#motoQuantity',
         motoLossRatio: '#motoLossRatio',
-        motoHandlingFeeRate: '#motoHandlingFeeRate',
+        motoWithCarFeeRate: '#motoWithCarFeeRate',
+        motoCardFeeRate: '#motoCardFeeRate',
         motoSalesPromotionRate: '#motoSalesPromotionRate',
         motoStandardPremiumRatio: '#motoStandardPremiumRatio'
     },
