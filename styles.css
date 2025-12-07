@@ -208,7 +208,7 @@
 
         /* 参数摘要区域 */
         .param-summary-section {
-            background: var(--color-background-content);
+            background: linear-gradient(135deg, hsla(var(--hue-accent), 90%, 55%, 0.08), hsla(var(--hue-accent), 80%, 50%, 0.03));
             border-radius: var(--border-radius);
             padding: var(--spacing-md);
             margin-bottom: var(--spacing-lg);
@@ -216,6 +216,7 @@
             justify-content: space-between;
             align-items: center;
             border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-subtle);
         }
         .param-summary-label {
             font-size: var(--font-size-sm);
@@ -228,80 +229,122 @@
             font-weight: var(--font-weight-semibold);
         }
 
-        /* 参数表格 */
-        .params-table {
-            width: 100%;
-            border-collapse: collapse;
+        /* 参数卡片布局 */
+        .param-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+        .param-actions__hint {
+            color: var(--color-text-tertiary);
             font-size: var(--font-size-sm);
         }
-        .params-table thead {
-            background: var(--color-background-content);
-            position: sticky;
-            top: 0;
-            z-index: 1;
+        .param-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+            border: 1px solid hsla(var(--color-text-primary-rgb-tuple, 255,255,255), 0.08);
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.28);
+            overflow: hidden;
+            backdrop-filter: blur(10px) saturate(160%);
+            -webkit-backdrop-filter: blur(10px) saturate(160%);
+            margin-bottom: var(--spacing-md);
         }
-        .params-table th {
-            padding: var(--spacing-sm) var(--spacing-xs);
-            text-align: left;
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-secondary);
-            border-bottom: 2px solid var(--color-border);
-            font-size: calc(var(--font-size-sm) - 1px);
+        html.theme-light .param-card {
+            border-color: rgba(0,0,0,0.05);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.12);
         }
-        .params-table td {
-            padding: var(--spacing-sm) var(--spacing-xs);
-            border-bottom: 1px solid var(--color-divider);
-        }
-
-        /* 列宽度控制 */
-        .col-category { width: 15%; }
-        .col-product { width: 12%; }
-        .col-parameter { width: 30%; }
-        .col-default { width: 12%; text-align: right; }
-        .col-current { width: 23%; }
-        .col-unit { width: 8%; }
-
-        /* 分类行样式 */
-        .category-row {
-            background: var(--color-background-content);
+        .param-card__header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md) var(--spacing-lg);
+            min-height: 56px;
             cursor: pointer;
-            user-select: none;
+            position: relative;
         }
-        .category-row:hover {
-            background: var(--color-background-elevated);
+        .param-card__header::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0));
+            pointer-events: none;
         }
-        .category-row .col-category {
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-            font-size: var(--font-size-base);
+        .param-card__toggle:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 4px;
         }
-        .category-row .col-product {
-            font-weight: var(--font-weight-medium);
-            color: var(--color-text-primary);
+        .param-card__accent {
+            width: 6px;
+            align-self: stretch;
+            border-radius: var(--border-radius);
+            background: linear-gradient(180deg, #a2facf, #64acff);
         }
-
-        /* 折叠图标 */
-        .collapse-icon, .product-icon {
-            display: inline-block;
-            margin-right: var(--spacing-xs);
-            transition: transform 0.2s ease;
-            font-size: 10px;
+        .param-card__accent--blue { background: linear-gradient(180deg, #6dd5fa, #2980b9); }
+        .param-card__accent--pink { background: linear-gradient(180deg, #ff9a9e, #fad0c4); }
+        .param-card__title-group { display: flex; flex-direction: column; gap: var(--spacing-xs); z-index: 1; }
+        .param-card__eyebrow { color: var(--color-text-tertiary); font-size: var(--font-size-sm); letter-spacing: 0.5px; text-transform: uppercase; }
+        .param-card__title-row { display: flex; align-items: center; gap: var(--spacing-sm); }
+        .param-card__title { font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--color-text-primary); }
+        .param-card__description { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+        .param-card__chevron {
+            width: 28px;
+            height: 28px;
+            color: var(--color-text-secondary);
+            transition: transform var(--transition-duration-normal) ease, color var(--transition-duration-fast);
         }
-        .category-row:not(.collapsed) .collapse-icon,
-        .category-row:not(.collapsed) .product-icon {
-            transform: rotate(90deg);
+        .param-card:hover .param-card__chevron { color: var(--color-accent); }
+        .param-card:not(.is-collapsed) .param-card__chevron { transform: rotate(180deg); }
+        .param-card__body {
+            padding: 0 var(--spacing-lg) var(--spacing-lg);
+            border-top: 1px solid var(--color-divider);
         }
-
-        /* 参数输入框 */
+        .param-card.is-collapsed .param-card__body { display: none; }
+        .param-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--spacing-md);
+            padding-top: var(--spacing-md);
+        }
+        .param-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--color-divider);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr minmax(220px, 0.9fr);
+            gap: var(--spacing-md);
+            align-items: center;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+        }
+        .param-item::before {
+            content: '';
+            position: absolute;
+            left: var(--spacing-md);
+            right: var(--spacing-md);
+            top: 0;
+            border-top: 1px dashed var(--color-divider);
+            opacity: 0.6;
+        }
+        .param-item:first-child::before { display: none; }
+        .param-item__info { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+        .param-item__product { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; background: hsla(var(--hue-accent), 70%, 60%, 0.14); color: var(--color-text-primary); font-size: calc(var(--font-size-sm) - 1px); width: fit-content; }
+        .param-item__name { font-weight: var(--font-weight-semibold); color: var(--color-text-primary); }
+        .param-item__default { color: var(--color-text-tertiary); font-size: var(--font-size-sm); }
+        .param-item__control { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+        .param-item__label { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+        .param-input-wrap { display: flex; align-items: center; gap: var(--spacing-sm); }
         .param-input {
             width: 100%;
-            padding: var(--spacing-xs) var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
             border: 1px solid var(--color-border);
-            border-radius: calc(var(--border-radius) / 2);
-            font-size: var(--font-size-sm);
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-base);
             color: var(--color-text-primary);
             background-color: var(--color-background-input);
-            transition: border-color var(--transition-duration-fast), box-shadow var(--transition-duration-fast);
+            transition: border-color var(--transition-duration-fast), box-shadow var(--transition-duration-fast), background-color var(--transition-duration-fast);
         }
         .param-input:focus {
             outline: none;
@@ -309,30 +352,9 @@
             box-shadow: 0 0 0 2px hsla(var(--hue-accent), var(--saturation-accent), var(--lightness-accent), 0.2);
         }
         .param-input[type=number]::-webkit-inner-spin-button,
-        .param-input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        .param-input[type=number] {
-            -moz-appearance: textfield;
-        }
-
-        /* 隐藏/显示参数行 */
-        .param-row.hidden {
-            display: none;
-        }
-
-        /* 默认值列样式 */
-        .col-default {
-            color: var(--color-text-tertiary);
-            font-size: calc(var(--font-size-sm) - 1px);
-        }
-
-        /* 单位列样式 */
-        .col-unit {
-            color: var(--color-text-tertiary);
-            font-size: calc(var(--font-size-sm) - 1px);
-        }
+        .param-input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .param-input[type=number] { -moz-appearance: textfield; }
+        .param-input__unit { color: var(--color-text-tertiary); font-size: var(--font-size-sm); min-width: 32px; text-align: right; }
         .input-group { margin-bottom: var(--spacing-lg); }
         .input-group__title { font-size: var(--font-size-base); color: var(--color-accent); margin-bottom: var(--spacing-md); font-weight: var(--font-weight-semibold); }
         .form-field { margin-bottom: var(--spacing-md); position: relative; }

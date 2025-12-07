@@ -30,31 +30,56 @@
             DOMElements.activeSchemeLabel = $('#activeSchemeLabel'); DOMElements.activeThemeLabel = $('#activeThemeLabel'); DOMElements.insightSummary = $('#insightSummary');
             DOMElements.summaryHeadline = $('#summaryHeadline'); DOMElements.summarySubline = $('#summarySubline'); DOMElements.focusOnProfitBtn = $('#focusOnProfitBtn'); DOMElements.openParametersBtnSecondary = $('#openParametersBtnSecondary');
             DOMElements.motoPremiumRatioDisplay = $('#motoPremiumRatioDisplay');
+            DOMElements.toggleAllCardsBtn = $('#toggleAllCardsBtn');
             DOMElements.inputs = {}; for (const key in APP_CONFIG.INPUT_SELECTORS) DOMElements.inputs[key] = $(APP_CONFIG.INPUT_SELECTORS[key]);
             DOMElements.kpis = {}; for (const key in APP_CONFIG.KPI_SELECTORS) DOMElements.kpis[key] = $(APP_CONFIG.KPI_SELECTORS[key]);
         }
 
-        // --- 参数表格折叠展开功能 ---
-        function initParameterTableCollapse() {
-            const categoryRows = $$('.category-row.collapsible');
-            categoryRows.forEach(row => {
-                row.addEventListener('click', (e) => {
-                    const category = row.dataset.category;
-                    const isCollapsed = row.classList.contains('collapsed');
+        // --- 参数卡片折叠展开功能 ---
+        function initParameterCardsCollapse() {
+            const cards = $$('.param-card');
+            const toggleAllBtn = DOMElements.toggleAllCardsBtn;
 
-                    if (isCollapsed) {
-                        // 展开
-                        row.classList.remove('collapsed');
-                        const relatedRows = $$(`.param-row[data-category="${category}"]`);
-                        relatedRows.forEach(r => r.classList.remove('hidden'));
-                    } else {
-                        // 折叠
-                        row.classList.add('collapsed');
-                        const relatedRows = $$(`.param-row[data-category="${category}"]`);
-                        relatedRows.forEach(r => r.classList.add('hidden'));
-                    }
-                });
+            const setCardState = (card, collapsed) => {
+                const body = card.querySelector('.param-card__body');
+                const toggle = card.querySelector('.param-card__toggle');
+                card.classList.toggle('is-collapsed', collapsed);
+                if (body) body.hidden = collapsed;
+                if (toggle) toggle.setAttribute('aria-expanded', (!collapsed).toString());
+            };
+
+            const updateToggleAllLabel = () => {
+                if (!toggleAllBtn) return;
+                const hasCollapsed = Array.from(cards).some(card => card.classList.contains('is-collapsed'));
+                toggleAllBtn.textContent = hasCollapsed ? '全部展开' : '全部收起';
+                toggleAllBtn.setAttribute('aria-pressed', (!hasCollapsed).toString());
+            };
+
+            cards.forEach(card => {
+                const toggle = card.querySelector('.param-card__toggle');
+                const handleToggle = (event) => {
+                    if (event.type === 'keydown' && !['Enter', ' '].includes(event.key)) return;
+                    if (event.type === 'keydown') event.preventDefault();
+                    const isCollapsed = card.classList.contains('is-collapsed');
+                    setCardState(card, !isCollapsed);
+                    updateToggleAllLabel();
+                };
+
+                setCardState(card, card.classList.contains('is-collapsed'));
+                if (toggle) {
+                    toggle.addEventListener('click', handleToggle);
+                    toggle.addEventListener('keydown', handleToggle);
+                }
             });
+
+            if (toggleAllBtn) {
+                toggleAllBtn.addEventListener('click', () => {
+                    const shouldExpand = Array.from(cards).some(card => card.classList.contains('is-collapsed'));
+                    cards.forEach(card => setCardState(card, !shouldExpand));
+                    updateToggleAllLabel();
+                });
+                updateToggleAllLabel();
+            }
         }
 
         // --- 输入自动跳转功能 ---
@@ -772,7 +797,7 @@
             cacheDOMElements();
             loadSavedTheme();
             initCharts();
-            initParameterTableCollapse();
+            initParameterCardsCollapse();
             setupInputAutoFocus();
             bindEventListeners();
             storeCurrentInputValues();
