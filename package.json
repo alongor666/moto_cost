@@ -1,0 +1,7 @@
+{
+  "name": "moto_cost",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/schema.test.js"
+  }
+}

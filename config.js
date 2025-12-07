@@ -1,9 +1,8 @@
-// Application configuration and constants extracted for modularity
-const DEFAULT_SCHEME_KEY = '104.2';
-const DEFAULT_ANALYSIS_TAB = 'combined';
-const THEME_STORAGE_KEY = 'costInsightProTheme';
+export const DEFAULT_SCHEME_KEY = '104.2';
+export const DEFAULT_ANALYSIS_TAB = 'combined';
+export const THEME_STORAGE_KEY = 'costInsightProTheme';
 
-const APP_CONFIG = {
+export const APP_CONFIG = {
     THEME_STORAGE_KEY,
     INDICATOR_CONFIG: {
         PREMIUM: { label: '保费', colorKey: 'neutral', isRate: false },
@@ -62,15 +61,4 @@ const APP_CONFIG = {
     }
 };
 
-// expose to global scope
-if (typeof window !== 'undefined') {
-    window.DEFAULT_SCHEME_KEY = DEFAULT_SCHEME_KEY;
-    window.DEFAULT_ANALYSIS_TAB = DEFAULT_ANALYSIS_TAB;
-    window.APP_CONFIG = APP_CONFIG;
-}
-
-// Support simple Node-based checks
-if (typeof module !== 'undefined') {
-    module.exports = { DEFAULT_SCHEME_KEY, DEFAULT_ANALYSIS_TAB, THEME_STORAGE_KEY, APP_CONFIG };
-}
-
+export default APP_CONFIG;
