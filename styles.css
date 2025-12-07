@@ -181,7 +181,7 @@
 
         /* Parameters Drawer, Form Fields, Buttons, Modal & Backdrop (mostly same) */
         .parameters-drawer {
-            position: fixed; top: 0; right: 0; width: 380px; /* Slightly wider for larger fonts */
+            position: fixed; top: 0; right: 0; width: clamp(520px, 48vw, 640px);
             height: 100%;
             background-color: var(--color-background-elevated); box-shadow: var(--shadow-strong);
             padding-top: 0; overflow-y: hidden; z-index: 1100; transform: translateX(100%);
@@ -201,10 +201,46 @@
             transition: border-color var(--transition-duration-normal), background-color var(--transition-duration-normal);
         }
         .parameters-drawer__title { font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); }
-        .parameters-drawer__content { flex-grow: 1; overflow-y: auto; padding: var(--spacing-lg); padding-top: var(--spacing-md); }
+        .parameters-drawer__content { flex-grow: 1; overflow-y: auto; padding: var(--spacing-lg); padding-top: var(--spacing-md); padding-bottom: calc(var(--spacing-xl) * 2); }
         .parameters-drawer__content::-webkit-scrollbar { width: 8px; }
         .parameters-drawer__content::-webkit-scrollbar-track { background: transparent; }
         .parameters-drawer__content::-webkit-scrollbar-thumb { background-color: var(--color-text-tertiary); border-radius: 4px; }
+
+        .parameters-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        .parameters-drawer__aside {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .category-card {
+            background: var(--color-background-content);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            box-shadow: var(--shadow-subtle);
+        }
+        .category-card__label { font-weight: var(--font-weight-semibold); margin-bottom: var(--spacing-xs); color: var(--color-text-primary); }
+        .category-card__desc { color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: 1.4; }
+
+        .parameters-drawer__footer {
+            position: sticky;
+            bottom: 0;
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: linear-gradient(180deg, rgba(0,0,0,0) 0%, var(--color-background-elevated) 20%);
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+        .drawer-footer__schemes { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-md); flex-wrap: wrap; }
+        .footer-label { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+        .drawer-footer__actions { display: flex; gap: var(--spacing-sm); justify-content: flex-end; }
 
         /* 参数摘要区域 */
         .param-summary-section {
@@ -233,6 +269,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: var(--font-size-sm);
+            border-spacing: 0 var(--spacing-xs);
         }
         .params-table thead {
             background: var(--color-background-content);
@@ -241,7 +278,7 @@
             z-index: 1;
         }
         .params-table th {
-            padding: var(--spacing-sm) var(--spacing-xs);
+            padding: var(--spacing-sm) var(--spacing-sm);
             text-align: left;
             font-weight: var(--font-weight-semibold);
             color: var(--color-text-secondary);
@@ -249,7 +286,7 @@
             font-size: calc(var(--font-size-sm) - 1px);
         }
         .params-table td {
-            padding: var(--spacing-sm) var(--spacing-xs);
+            padding: var(--spacing-sm) var(--spacing-sm);
             border-bottom: 1px solid var(--color-divider);
         }
 
@@ -303,6 +340,7 @@
             color: var(--color-text-primary);
             background-color: var(--color-background-input);
             transition: border-color var(--transition-duration-fast), box-shadow var(--transition-duration-fast);
+            min-width: 220px;
         }
         .param-input.is-valid { border-color: var(--color-positive); box-shadow: 0 0 0 2px rgba(50, 215, 75, 0.12); }
         .param-input.is-warning { border-color: var(--color-warning); box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.18); }
@@ -432,10 +470,17 @@
             .app-header { flex-direction: column; align-items: flex-start; }
             .app-controls { width: 100%; flex-wrap: wrap; justify-content: flex-start; }
             .btn-group { flex-grow: 1; }
-            .parameters-drawer { width: 90%; max-width: 340px; } /* Slightly adjust for mobile */
+            .parameters-drawer { width: 96vw; max-width: 520px; }
+            .parameters-layout { grid-template-columns: 1fr; }
+            .drawer-footer__schemes { flex-direction: column; align-items: flex-start; }
+            .drawer-footer__actions { width: 100%; }
             .kpi-card__value { font-size: var(--font-size-xxl); }
             .kpi-card__value .unit { font-size: var(--font-size-base); }
             .main-view { padding: var(--spacing-lg) var(--spacing-md); }
             .analysis-tabs { justify-content: center; }
             :root { --font-size-chart-xaxis: 16px; } /* Adjust chart fonts on mobile if base is too large */
+        }
+
+        @media (min-width: 1200px) {
+            .parameters-layout { grid-template-columns: 280px 1fr; }
         }
