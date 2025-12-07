@@ -291,12 +291,13 @@
         }
 
         /* 列宽度控制 */
-        .col-category { width: 14%; min-width: 140px; }
-        .col-product { width: 12%; min-width: 120px; }
-        .col-parameter { width: 28%; min-width: 220px; }
-        .col-default { width: 12%; text-align: right; min-width: 100px; }
-        .col-current { width: 24%; min-width: 220px; }
-        .col-unit { width: 10%; min-width: 80px; }
+        .col-category { width: 15%; }
+        .col-product { width: 12%; }
+        .col-parameter { width: 30%; }
+        .col-default { width: 12%; text-align: right; }
+        .col-current { width: 28%; }
+        .col-unit { width: 8%; }
+        .col-status { width: 12%; }
 
         /* 分类行样式 */
         .category-row {
@@ -341,6 +342,9 @@
             transition: border-color var(--transition-duration-fast), box-shadow var(--transition-duration-fast);
             min-width: 220px;
         }
+        .param-input.is-valid { border-color: var(--color-positive); box-shadow: 0 0 0 2px rgba(50, 215, 75, 0.12); }
+        .param-input.is-warning { border-color: var(--color-warning); box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.18); }
+        .param-input.is-error { border-color: var(--color-negative); box-shadow: 0 0 0 2px rgba(255, 69, 58, 0.2); }
         .param-input:focus {
             outline: none;
             border-color: var(--color-accent);
@@ -354,6 +358,26 @@
         .param-input[type=number] {
             -moz-appearance: textfield;
         }
+
+        .param-control { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+        .input-with-tools { display: flex; gap: var(--spacing-xs); align-items: center; }
+        .conversion-hint { font-size: var(--font-size-sm); color: var(--color-text-secondary); min-height: 18px; }
+        .default-cell { display: flex; gap: var(--spacing-xs); align-items: center; justify-content: flex-end; }
+        .default-value { color: var(--color-text-tertiary); }
+        .btn--sm { padding: 4px 8px; font-size: var(--font-size-sm); }
+
+        .stepper { display: flex; gap: var(--spacing-xs); align-items: center; }
+        .stepper__steps { display: flex; gap: 4px; }
+        .stepper__step { padding: 4px 6px; border-radius: 6px; border: 1px solid var(--color-border); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+        .stepper__step.is-active { background: var(--color-background-elevated); color: var(--color-text-primary); border-color: var(--color-accent); }
+        .stepper__actions { display: flex; gap: 4px; }
+        .stepper__btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--color-border); background: var(--color-background-content); color: var(--color-text-primary); cursor: pointer; }
+        .stepper__btn:hover { border-color: var(--color-accent); }
+
+        .status-chip { display: inline-flex; padding: 4px 8px; border-radius: 999px; font-size: var(--font-size-sm); background: var(--color-background-elevated); color: var(--color-text-secondary); min-width: 80px; justify-content: center; }
+        .status-chip--success { background: rgba(50, 215, 75, 0.1); color: var(--color-positive); border: 1px solid rgba(50, 215, 75, 0.4); }
+        .status-chip--warning { background: rgba(255, 204, 0, 0.1); color: var(--color-warning); border: 1px solid rgba(255, 204, 0, 0.4); }
+        .status-chip--error { background: rgba(255, 69, 58, 0.08); color: var(--color-negative); border: 1px solid rgba(255, 69, 58, 0.45); }
 
         /* 隐藏/显示参数行 */
         .param-row.hidden {
