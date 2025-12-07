@@ -409,23 +409,40 @@
             };
         }
 
+        function buildRateFactors(rateData) {
+            const [totalCostRate, variableCostRate, lossRatio, handlingFeeRatio, salesPromotionRatio, laborCostRatio] = rateData;
+            const fixedCostRate = totalCostRate - variableCostRate;
+
+            const factors = [
+                { key: 'LOSS_RATIO', name: '赔付率', value: parseFloat((lossRatio * 100).toFixed(1)) },
+                { key: 'HANDLING_FEE_RATIO', name: '手续费率', value: parseFloat((handlingFeeRatio * 100).toFixed(1)) },
+                { key: 'SALES_PROMOTION_RATIO', name: '销推费率', value: parseFloat((salesPromotionRatio * 100).toFixed(1)) },
+                { key: 'LABOR_COST_RATIO', name: '人力成本率', value: parseFloat((laborCostRatio * 100).toFixed(1)) },
+                { key: 'FIXED_COST_RATIO', name: '固定成本率', value: parseFloat((fixedCostRate * 100).toFixed(1)) }
+            ];
+
+            return factors.sort((a, b) => b.value - a.value);
+        }
+
+        function mapRateFactorValues(rateData) {
+            const [totalCostRate, variableCostRate, lossRatio, handlingFeeRatio, salesPromotionRatio, laborCostRatio] = rateData;
+            const fixedCostRate = totalCostRate - variableCostRate;
+
+            return {
+                LOSS_RATIO: parseFloat((lossRatio * 100).toFixed(1)),
+                HANDLING_FEE_RATIO: parseFloat((handlingFeeRatio * 100).toFixed(1)),
+                SALES_PROMOTION_RATIO: parseFloat((salesPromotionRatio * 100).toFixed(1)),
+                LABOR_COST_RATIO: parseFloat((laborCostRatio * 100).toFixed(1)),
+                FIXED_COST_RATIO: parseFloat((fixedCostRate * 100).toFixed(1))
+            };
+        }
+
         function createRateChartOption(data, chartTitle) {
             const themeOpts = getChartThemeOptions();
-            // 瀑布图数据结构（比率）: data = [综合成本率, 变动成本率, 赔付率, 手续费率, 销推费率, 人力成本率, 边际贡献率]
-            const [totalCostRate, variableCostRate, lossRatio, handlingFeeRatio, salesPromotionRatio, laborCostRatio, edgeContributionRatio] = data;
+            const costFactors = buildRateFactors(data);
 
-            // 转换为百分比
-            const lossRatioPct = parseFloat((lossRatio * 100).toFixed(1));
-            const handlingFeeRatioPct = parseFloat((handlingFeeRatio * 100).toFixed(1));
-            const salesPromotionRatioPct = parseFloat((salesPromotionRatio * 100).toFixed(1));
-            const laborCostRatioPct = parseFloat((laborCostRatio * 100).toFixed(1));
-            const variableCostRatePct = parseFloat((variableCostRate * 100).toFixed(1));
-            const fixedCostRatePct = parseFloat(((totalCostRate - variableCostRate) * 100).toFixed(1));
-            const totalCostRatePct = parseFloat((totalCostRate * 100).toFixed(1));
-            const profitRatePct = parseFloat(((1 - totalCostRate) * 100).toFixed(1));
-
-            // 瀑布图X轴标签
-            const xAxisData = ['保费基准', '赔付率', '手续费率', '销推费率', '人力成本率', '变动成本率', '固定成本率', '综合成本率', '利润率'];
+            // 瀑布图X轴标签（保费基准 + 动态排序的成本率因子）
+            const xAxisData = ['保费基准', ...costFactors.map(factor => factor.name)];
 
             // 计算累计值
             let cumulative = 100; // 从100%开始
@@ -438,35 +455,13 @@
             values.push(100);
             colors.push(themeOpts.colorNeutral);
 
-            // 2-5. 成本率项（减项）
-            const costs = [lossRatioPct, handlingFeeRatioPct, salesPromotionRatioPct, laborCostRatioPct];
-            costs.forEach(cost => {
-                helpers.push(cumulative - cost);
-                values.push(cost);
-                cumulative -= cost;
+            // 2-n. 成本率项（减项，按当前值降序）
+            costFactors.forEach(cost => {
+                helpers.push(cumulative - cost.value);
+                values.push(cost.value);
+                cumulative -= cost.value;
                 colors.push(themeOpts.colorNegative);
             });
-
-            // 6. 变动成本率（累计点）
-            helpers.push(0);
-            values.push(variableCostRatePct);
-            colors.push(themeOpts.colorNeutral);
-
-            // 7. 固定成本率（减项）
-            helpers.push(cumulative - fixedCostRatePct);
-            values.push(fixedCostRatePct);
-            cumulative -= fixedCostRatePct;
-            colors.push(themeOpts.colorNegative);
-
-            // 8. 综合成本率（累计点）
-            helpers.push(0);
-            values.push(totalCostRatePct);
-            colors.push(totalCostRatePct <= 100 ? themeOpts.colorNeutral : themeOpts.colorNegative);
-
-            // 9. 利润率（剩余）
-            helpers.push(0);
-            values.push(profitRatePct);
-            colors.push(profitRatePct >= 0 ? themeOpts.colorPositive : themeOpts.colorNegative);
 
             return {
                 title: { ...themeOpts.title, text: chartTitle },
@@ -626,21 +621,23 @@
             csvContent += '\n三、成本瀑布分析(比率-%)\n';
             csvContent += '瀑布节点,车险,摩意险,合计\n';
 
-            const carFixedCostRate = ((data.car.rate[0] - data.car.rate[1]) * 100).toFixed(1);
-            const motoFixedCostRate = ((data.moto.rate[0] - data.moto.rate[1]) * 100).toFixed(1);
-            const totalFixedCostRate = ((data.combined.rate[0] - data.combined.rate[1]) * 100).toFixed(1);
-
             const waterfallRate = [
-                ['保费基准', '100.0', '100.0', '100.0'],
-                ['赔付率', (data.car.rate[2] * 100).toFixed(1), (data.moto.rate[2] * 100).toFixed(1), (data.combined.rate[2] * 100).toFixed(1)],
-                ['手续费率', (data.car.rate[3] * 100).toFixed(1), (data.moto.rate[3] * 100).toFixed(1), (data.combined.rate[3] * 100).toFixed(1)],
-                ['销推费率', (data.car.rate[4] * 100).toFixed(1), (data.moto.rate[4] * 100).toFixed(1), (data.combined.rate[4] * 100).toFixed(1)],
-                ['人力成本率', (data.car.rate[5] * 100).toFixed(1), (data.moto.rate[5] * 100).toFixed(1), (data.combined.rate[5] * 100).toFixed(1)],
-                ['变动成本率', (data.car.rate[1] * 100).toFixed(1), (data.moto.rate[1] * 100).toFixed(1), (data.combined.rate[1] * 100).toFixed(1)],
-                ['固定成本率', carFixedCostRate, motoFixedCostRate, totalFixedCostRate],
-                ['综合成本率', (data.car.rate[0] * 100).toFixed(1), (data.moto.rate[0] * 100).toFixed(1), (data.combined.rate[0] * 100).toFixed(1)],
-                ['利润率', ((1 - data.car.rate[0]) * 100).toFixed(1), ((1 - data.moto.rate[0]) * 100).toFixed(1), ((1 - data.combined.rate[0]) * 100).toFixed(1)]
+                ['保费基准', '100.0', '100.0', '100.0']
             ];
+
+            const sortedRateFactors = buildRateFactors(data.combined.rate);
+            const carFactorValues = mapRateFactorValues(data.car.rate);
+            const motoFactorValues = mapRateFactorValues(data.moto.rate);
+            const combinedFactorValues = mapRateFactorValues(data.combined.rate);
+
+            sortedRateFactors.forEach(factor => {
+                waterfallRate.push([
+                    factor.name,
+                    carFactorValues[factor.key].toFixed(1),
+                    motoFactorValues[factor.key].toFixed(1),
+                    combinedFactorValues[factor.key].toFixed(1)
+                ]);
+            });
             waterfallRate.forEach(row => csvContent += row.join(',') + '\n');
 
             // 第四部分：盈亏平衡分析
