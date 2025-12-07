@@ -1,36 +1,12 @@
     // --- CostInsightPro Application Module ---
     const CostInsightPro = (() => {
         const DOMElements = {};
-        const VALIDATION_RULES = {
-            laborBaseRate: { min: 0, max: 150, warningHigh: 60, dangerHigh: 100, label: '人力成本率' },
-            fixedOperationRate: { min: 0, max: 50, warningHigh: 15, dangerHigh: 25, label: '固定运营成本率' },
-            carPremium: { min: 0, max: 5000, warningLow: 200, label: '车险保费(万元)' },
-            carLossRatio: { min: 0, max: 200, warningHigh: 110, dangerHigh: 130, label: '车险赔付率' },
-            carHandlingFeeRate: { min: 0, max: 50, warningHigh: 20, dangerHigh: 35, label: '车险手续费率' },
-            carSalesPromotionRate: { min: 0, max: 30, warningHigh: 10, dangerHigh: 20, label: '车险销推费用率' },
-            carStandardPremiumRatio: { min: 0, max: 5, warningHigh: 2, dangerHigh: 3, label: '车险标保系数' },
-            carAveragePremium: { min: 0, max: 500, warningLow: 60, label: '车险单均保费(元)' },
-            motoAveragePremium: { min: 0, max: 500, warningLow: 50, label: '摩意险件均保费(元)' },
-            motoQuantity: { min: 0, max: 10, warningHigh: 5, label: '摩意险份数' },
-            motoLossRatio: { min: 0, max: 200, warningHigh: 80, dangerHigh: 120, label: '摩意险赔付率' },
-            motoWithCarFeeRate: { min: 0, max: 150, warningHigh: 90, dangerHigh: 120, label: '随车费用率' },
-            motoCardFeeRate: { min: 0, max: 150, warningHigh: 90, dangerHigh: 120, label: '卡单费用率' },
-            motoSalesPromotionRate: { min: 0, max: 30, warningHigh: 10, dangerHigh: 20, label: '摩意险销推费用率' },
-            motoStandardPremiumRatio: { min: 0, max: 5, warningHigh: 2.5, dangerHigh: 3.5, label: '摩意险标保系数' }
-        };
-        const CONVERSION_LABELS = {
-            laborBaseRate: '人力成本基数',
-            fixedOperationRate: '固定运营成本率',
-            carLossRatio: '车险赔付率',
-            carHandlingFeeRate: '车险手续费率',
-            carSalesPromotionRate: '车险销推费用率',
-            carStandardPremiumRatio: '车险标保系数',
-            motoLossRatio: '摩意险赔付率',
-            motoWithCarFeeRate: '随车业务费用率',
-            motoCardFeeRate: '卡单费用率',
-            motoSalesPromotionRate: '摩意险销推费用率',
-            motoStandardPremiumRatio: '摩意险标保系数'
-        };
+        const {
+            VALIDATION_RULES = {},
+            CONVERSION_LABELS = {},
+            PARAMETER_SCHEMA = [],
+            PARAMETER_MAP = {}
+        } = window.PARAMETERS_CONFIG || {};
         const EChartsInstances = {};
         let currentInputValues = {};
         let exportCounter = 1;
@@ -188,12 +164,36 @@
             Object.keys(DOMElements.inputs).forEach(validateField);
         }
 
+        function applySchemaDefaults() {
+            PARAMETER_SCHEMA.forEach(param => {
+                const input = DOMElements.inputs[param.id];
+                if (input) {
+                    if (!isNaN(param.min)) input.setAttribute('min', param.min);
+                    if (!isNaN(param.max)) input.setAttribute('max', param.max);
+                    input.dataset.default = param.defaultValue;
+                    if (!input.value) input.value = param.defaultValue;
+                    if (!input.placeholder) {
+                        const hasRange = !isNaN(param.min) && !isNaN(param.max);
+                        const rangeText = hasRange ? `${param.min}-${param.max}${param.unit || ''}` : `${param.unit || ''}`;
+                        input.placeholder = rangeText ? `输入 ${rangeText}` : input.placeholder;
+                    }
+                }
+
+                const defaultValueEl = input?.closest('.param-row')?.querySelector('.default-value');
+                if (defaultValueEl) {
+                    defaultValueEl.dataset.default = param.defaultValue;
+                    defaultValueEl.textContent = param.defaultValue;
+                }
+            });
+        }
+
         function setupDefaultFillers() {
             $$('.fill-default-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const target = btn.dataset.target;
                     const input = DOMElements.inputs[target];
-                    const defaultValue = btn.closest('.default-cell')?.querySelector('.default-value')?.dataset.default;
+                    const defaultValue = PARAMETER_MAP[target]?.defaultValue
+                        ?? btn.closest('.default-cell')?.querySelector('.default-value')?.dataset.default;
                     if (input && defaultValue !== undefined) {
                         input.value = defaultValue;
                         input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -256,9 +256,8 @@
                 if (isNaN(value)) { hintEl.textContent = ''; return; }
 
                 if (CONVERSION_LABELS[key]) {
-                    const factor = VALIDATION_RULES[key]?.label?.includes('费') || VALIDATION_RULES[key]?.label?.includes('率')
-                        ? value / 100
-                        : value;
+                    const param = PARAMETER_MAP[key];
+                    const factor = param?.type === 'percent' ? value / 100 : value;
                     hintEl.textContent = `= ${factor.toFixed(2)}x ${CONVERSION_LABELS[key]}`;
                 }
             });
@@ -967,6 +966,7 @@
         // --- Initialization ---
         function init() {
             cacheDOMElements();
+            applySchemaDefaults();
             loadSavedTheme();
             initCharts();
             initParameterCardsCollapse();

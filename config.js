@@ -63,7 +63,14 @@ const APP_CONFIG = {
 };
 
 // expose to global scope
-window.DEFAULT_SCHEME_KEY = DEFAULT_SCHEME_KEY;
-window.DEFAULT_ANALYSIS_TAB = DEFAULT_ANALYSIS_TAB;
-window.APP_CONFIG = APP_CONFIG;
+if (typeof window !== 'undefined') {
+    window.DEFAULT_SCHEME_KEY = DEFAULT_SCHEME_KEY;
+    window.DEFAULT_ANALYSIS_TAB = DEFAULT_ANALYSIS_TAB;
+    window.APP_CONFIG = APP_CONFIG;
+}
+
+// Support simple Node-based checks
+if (typeof module !== 'undefined') {
+    module.exports = { DEFAULT_SCHEME_KEY, DEFAULT_ANALYSIS_TAB, THEME_STORAGE_KEY, APP_CONFIG };
+}
 
