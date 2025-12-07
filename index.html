@@ -141,14 +141,9 @@
                         </thead>
                         <tbody>
                             <!-- 管理成本 -->
-                            <tr class="category-row collapsible collapsed" data-category="management">
-                                <td class="col-category" rowspan="2">
-                                    <span class="collapse-icon">▶</span>
-                                    管理成本
-                                </td>
-                                <td colspan="6"></td>
-                            </tr>
-                            <tr class="param-row management-cost hidden" data-category="management">
+                            <tr class="group-row"><td class="group-cell" colspan="7">管理成本</td></tr>
+                            <tr class="param-row management-cost" data-category="management">
+                                <td class="col-category" rowspan="2">管理成本</td>
                                 <td class="col-product">通用</td>
                                 <td class="col-parameter">人力成本基数</td>
                                 <td class="col-default">
@@ -179,7 +174,7 @@
                                 <td class="col-unit">%</td>
                                 <td class="col-status"><span class="status-chip" data-field="laborBaseRate"></span></td>
                             </tr>
-                            <tr class="param-row management-cost hidden" data-category="management">
+                            <tr class="param-row management-cost" data-category="management">
                                 <td class="col-product">通用</td>
                                 <td class="col-parameter">固定运营成本率</td>
                                 <td class="col-default">
@@ -212,17 +207,9 @@
                             </tr>
 
                             <!-- 变动成本 - 车险 -->
-                            <tr class="category-row collapsible collapsed" data-category="variable-car">
-                                <td class="col-category" rowspan="6">
-                                    <span class="collapse-icon">▶</span>
-                                    变动成本
-                                </td>
-                                <td class="col-product" colspan="6">
-                                    <span class="product-icon">▶</span>
-                                    车险
-                                </td>
-                            </tr>
-                            <tr class="param-row variable-car-cost hidden" data-category="variable-car">
+                            <tr class="group-row"><td class="group-cell" colspan="7">变动成本 · 车险</td></tr>
+                            <tr class="param-row variable-car-cost" data-category="variable-car">
+                                <td class="col-category" rowspan="5">变动成本</td>
                                 <td class="col-product">车险</td>
                                 <td class="col-parameter">车险保费</td>
                                 <td class="col-default">
@@ -242,7 +229,7 @@
                                 <td class="col-unit">万元</td>
                                 <td class="col-status"><span class="status-chip" data-field="carPremium"></span></td>
                             </tr>
-                            <tr class="param-row variable-car-cost hidden" data-category="variable-car">
+                            <tr class="param-row variable-car-cost" data-category="variable-car">
                                 <td class="col-product">车险</td>
                                 <td class="col-parameter">赔付率</td>
                                 <td class="col-default">
@@ -273,7 +260,7 @@
                                 <td class="col-unit">%</td>
                                 <td class="col-status"><span class="status-chip" data-field="carLossRatio"></span></td>
                             </tr>
-                            <tr class="param-row variable-car-cost hidden" data-category="variable-car">
+                            <tr class="param-row variable-car-cost" data-category="variable-car">
                                 <td class="col-product">车险</td>
                                 <td class="col-parameter">手续费率</td>
                                 <td class="col-default">
@@ -304,7 +291,7 @@
                                 <td class="col-unit">%</td>
                                 <td class="col-status"><span class="status-chip" data-field="carHandlingFeeRate"></span></td>
                             </tr>
-                            <tr class="param-row variable-car-cost hidden" data-category="variable-car">
+                            <tr class="param-row variable-car-cost" data-category="variable-car">
                                 <td class="col-product">车险</td>
                                 <td class="col-parameter">销推费用率</td>
                                 <td class="col-default">
@@ -335,7 +322,7 @@
                                 <td class="col-unit">%</td>
                                 <td class="col-status"><span class="status-chip" data-field="carSalesPromotionRate"></span></td>
                             </tr>
-                            <tr class="param-row variable-car-cost hidden" data-category="variable-car">
+                            <tr class="param-row variable-car-cost" data-category="variable-car">
                                 <td class="col-product">车险</td>
                                 <td class="col-parameter">标保系数</td>
                                 <td class="col-default">
@@ -368,13 +355,9 @@
                             </tr>
 
                             <!-- 变动成本 - 摩意险 -->
-                            <tr class="category-row collapsible collapsed" data-category="variable-moto">
-                                <td class="col-product" colspan="6">
-                                    <span class="product-icon">▶</span>
-                                    摩意险
-                                </td>
-                            </tr>
-                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                            <tr class="group-row"><td class="group-cell" colspan="7">变动成本 · 摩意险</td></tr>
+                            <tr class="param-row variable-moto-cost" data-category="variable-moto">
+                                <td class="col-category" rowspan="8">变动成本</td>
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">摩托车车险单均保费</td>
                                 <td class="col-default">
@@ -394,7 +377,7 @@
                                 <td class="col-unit">元</td>
                                 <td class="col-status"><span class="status-chip" data-field="carAveragePremium"></span></td>
                             </tr>
-                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                            <tr class="param-row variable-moto-cost" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">摩意险件均保费</td>
                                 <td class="col-default">
@@ -414,7 +397,7 @@
                                 <td class="col-unit">元</td>
                                 <td class="col-status"><span class="status-chip" data-field="motoAveragePremium"></span></td>
                             </tr>
-                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                            <tr class="param-row variable-moto-cost" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">摩意险份数</td>
                                 <td class="col-default">
@@ -434,7 +417,7 @@
                                 <td class="col-unit">份</td>
                                 <td class="col-status"><span class="status-chip" data-field="motoQuantity"></span></td>
                             </tr>
-                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                            <tr class="param-row variable-moto-cost" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">赔付率</td>
                                 <td class="col-default">
@@ -465,7 +448,7 @@
                                 <td class="col-unit">%</td>
                                 <td class="col-status"><span class="status-chip" data-field="motoLossRatio"></span></td>
                             </tr>
-                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                            <tr class="param-row variable-moto-cost" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">摩意险随车业务费用率</td>
                                 <td class="col-default">
@@ -496,7 +479,7 @@
                                 <td class="col-unit">%</td>
                                 <td class="col-status"><span class="status-chip" data-field="motoWithCarFeeRate"></span></td>
                             </tr>
-                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                            <tr class="param-row variable-moto-cost" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">摩意险卡单费用率</td>
                                 <td class="col-default">
@@ -527,7 +510,7 @@
                                 <td class="col-unit">%</td>
                                 <td class="col-status"><span class="status-chip" data-field="motoCardFeeRate"></span></td>
                             </tr>
-                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                            <tr class="param-row variable-moto-cost" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">销售推动费用率</td>
                                 <td class="col-default">
@@ -558,7 +541,7 @@
                                 <td class="col-unit">%</td>
                                 <td class="col-status"><span class="status-chip" data-field="motoSalesPromotionRate"></span></td>
                             </tr>
-                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                            <tr class="param-row variable-moto-cost" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">标保系数</td>
                                 <td class="col-default">
