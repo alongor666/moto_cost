@@ -305,14 +305,28 @@
              if (config.colorKey === 'conditional') { if (config.isRate && config.higherIsWorse) { return value > config.threshold ? themeOpts.colorNegative : themeOpts.colorPositive; } else if (config.positiveGood) { return value >= 0 ? themeOpts.colorPositive : themeOpts.colorNegative; } } return config.colorKey === 'neutral' ? themeOpts.colorNeutral : themeOpts.colorAccent;
         }
 
-        function createAbsoluteChartOption(data, chartTitle, unit = '万元') {
-            const themeOpts = getChartThemeOptions();
-            // 瀑布图数据结构：保费, -赔款, -手续费, -销推, -人力, -固定成本, =利润
-            // data数组: [保费, 赔款, 手续费, 销推, 人力, 边际贡献, 利润]
-            const [premium, loss, handlingFee, salesPromotion, laborCost, edgeContribution, profit] = data.map(v => parseFloat(v.toFixed(1)));
+        function deriveFixedCost(premium, rateData) {
+            if (!rateData || rateData.length < 2) return 0;
+            const [totalCostRate, variableCostRate] = rateData;
+            return parseFloat((premium * (totalCostRate - variableCostRate)).toFixed(1));
+        }
 
-            // 计算固定成本 = 边际贡献 - 利润（用于保留利润闭合逻辑）
-            const fixedCost = parseFloat((edgeContribution - profit).toFixed(1));
+        function calculateProfitFromFactors({ premium, loss, handlingFee, salesPromotion, laborCost, fixedCost }) {
+            return parseFloat((premium - loss - handlingFee - salesPromotion - laborCost - fixedCost).toFixed(1));
+        }
+
+        function createAbsoluteChartOption(data, rateData, chartTitle, unit = '万元') {
+            const themeOpts = getChartThemeOptions();
+            // data数组: [保费, 赔款, 手续费, 销推, 人力, 边际贡献, 利润]
+            const formattedData = data.map(v => parseFloat(v.toFixed(1)));
+            const [premium, loss, handlingFee, salesPromotion, laborCost, edgeContribution] = formattedData;
+            const profitFromData = formattedData[6] || 0;
+
+            // 公式因子：固定成本 = 保费 × (总成本率 - 变动成本率)
+            const fixedCost = deriveFixedCost(premium, rateData) || parseFloat((edgeContribution - profitFromData).toFixed(1));
+
+            // 利润严格按照公式重新计算，避免依赖派生项
+            const profit = calculateProfitFromFactors({ premium, loss, handlingFee, salesPromotion, laborCost, fixedCost });
 
             // 需要排序的成本项（按绝对金额降序）
             const costItems = [
@@ -516,11 +530,11 @@
         }
 
         const CHART_META = {
-            carAbsolute: { getter: d => d.car.absolute, title: '车险成本瀑布分析 (万元)', option: createAbsoluteChartOption },
+            carAbsolute: { getter: d => d.car.absolute, rateGetter: d => d.car.rate, title: '车险成本瀑布分析 (万元)', option: createAbsoluteChartOption },
             carRate: { getter: d => d.car.rate, title: '车险成本率瀑布分析 (%)', option: createRateChartOption },
-            motoAbsolute: { getter: d => d.moto.absolute, title: '摩意险成本瀑布分析 (万元)', option: createAbsoluteChartOption },
+            motoAbsolute: { getter: d => d.moto.absolute, rateGetter: d => d.moto.rate, title: '摩意险成本瀑布分析 (万元)', option: createAbsoluteChartOption },
             motoRate: { getter: d => d.moto.rate, title: '摩意险成本率瀑布分析 (%)', option: createRateChartOption },
-            combinedAbsolute: { getter: d => d.combined.absolute, title: '综合成本瀑布分析 (万元)', option: createAbsoluteChartOption },
+            combinedAbsolute: { getter: d => d.combined.absolute, rateGetter: d => d.combined.rate, title: '综合成本瀑布分析 (万元)', option: createAbsoluteChartOption },
             combinedRate: { getter: d => d.combined.rate, title: '综合成本率瀑布分析 (%)', option: createRateChartOption }
         };
         const TAB_CHARTS = {
@@ -537,7 +551,7 @@
                 if (chart && meta) {
                     chart.showLoading();
                     chart.clear();
-                    chart.setOption(meta.option(meta.getter(data), meta.title), true);
+                    chart.setOption(meta.option(meta.getter(data), meta.rateGetter ? meta.rateGetter(data) : null, meta.title), true);
                     chart.hideLoading();
                 }
             });
@@ -597,10 +611,37 @@
             csvContent += '\n二、成本瀑布分析(绝对值-万元)\n';
             csvContent += '瀑布节点,车险,摩意险,合计\n';
 
-            // 计算固定成本
-            const carFixedCost = parseFloat((data.car.absolute[5] - data.car.absolute[6]).toFixed(1));
-            const motoFixedCost = parseFloat((data.moto.absolute[5] - data.moto.absolute[6]).toFixed(1));
-            const totalFixedCost = parseFloat((data.combined.absolute[5] - data.combined.absolute[6]).toFixed(1));
+            // 计算固定成本和利润（严格按公式因子）
+            const carFixedCost = deriveFixedCost(data.car.absolute[0], data.car.rate);
+            const motoFixedCost = deriveFixedCost(data.moto.absolute[0], data.moto.rate);
+            const totalFixedCost = deriveFixedCost(data.combined.absolute[0], data.combined.rate);
+
+            const carProfit = calculateProfitFromFactors({
+                premium: data.car.absolute[0],
+                loss: data.car.absolute[1],
+                handlingFee: data.car.absolute[2],
+                salesPromotion: data.car.absolute[3],
+                laborCost: data.car.absolute[4],
+                fixedCost: carFixedCost
+            });
+
+            const motoProfit = calculateProfitFromFactors({
+                premium: data.moto.absolute[0],
+                loss: data.moto.absolute[1],
+                handlingFee: data.moto.absolute[2],
+                salesPromotion: data.moto.absolute[3],
+                laborCost: data.moto.absolute[4],
+                fixedCost: motoFixedCost
+            });
+
+            const totalProfit = calculateProfitFromFactors({
+                premium: data.combined.absolute[0],
+                loss: data.combined.absolute[1],
+                handlingFee: data.combined.absolute[2],
+                salesPromotion: data.combined.absolute[3],
+                laborCost: data.combined.absolute[4],
+                fixedCost: totalFixedCost
+            });
 
             const costItemsAbsolute = [
                 {
@@ -638,7 +679,7 @@
             const waterfallAbsolute = [
                 ['保费', data.car.absolute[0].toFixed(1), data.moto.absolute[0].toFixed(1), data.combined.absolute[0].toFixed(1)],
                 ...costItemsAbsolute.map(item => [item.name, item.car.toFixed(1), item.moto.toFixed(1), item.total.toFixed(1)]),
-                ['利润', data.car.absolute[6].toFixed(1), data.moto.absolute[6].toFixed(1), data.combined.absolute[6].toFixed(1)]
+                ['利润', carProfit.toFixed(1), motoProfit.toFixed(1), totalProfit.toFixed(1)]
             ];
             waterfallAbsolute.forEach(row => csvContent += row.join(',') + '\n');
 
