@@ -307,15 +307,24 @@
 
         function createAbsoluteChartOption(data, chartTitle, unit = '万元') {
             const themeOpts = getChartThemeOptions();
-            // 瀑布图数据结构：保费, -赔款, -手续费, -销推, -人力, =边际贡献, -固定成本, =利润
+            // 瀑布图数据结构：保费, -赔款, -手续费, -销推, -人力, -固定成本, =利润
             // data数组: [保费, 赔款, 手续费, 销推, 人力, 边际贡献, 利润]
             const [premium, loss, handlingFee, salesPromotion, laborCost, edgeContribution, profit] = data.map(v => parseFloat(v.toFixed(1)));
 
-            // 计算固定成本 = 边际贡献 - 利润
+            // 计算固定成本 = 边际贡献 - 利润（用于保留利润闭合逻辑）
             const fixedCost = parseFloat((edgeContribution - profit).toFixed(1));
 
+            // 需要排序的成本项（按绝对金额降序）
+            const costItems = [
+                { name: '赔款', value: loss },
+                { name: '手续费', value: handlingFee },
+                { name: '销推费用', value: salesPromotion },
+                { name: '人力成本', value: laborCost },
+                { name: '固定成本', value: fixedCost }
+            ].sort((a, b) => b.value - a.value);
+
             // 瀑布图X轴标签
-            const xAxisData = ['保费', '赔款', '手续费', '销推费用', '人力成本', '边际贡献', '固定成本', '利润'];
+            const xAxisData = ['保费', ...costItems.map(item => item.name), '利润'];
 
             // 计算累计值（用于透明助手柱）
             let cumulative = 0;
@@ -329,27 +338,15 @@
             cumulative = premium;
             colors.push(themeOpts.colorNeutral);
 
-            // 2-5. 成本项（减项）
-            const costs = [loss, handlingFee, salesPromotion, laborCost];
-            costs.forEach(cost => {
-                helpers.push(cumulative - cost);
-                values.push(cost);
-                cumulative -= cost;
+            // 2-n. 成本项（按金额排序后的减项）
+            costItems.forEach(cost => {
+                helpers.push(cumulative - cost.value);
+                values.push(cost.value);
+                cumulative -= cost.value;
                 colors.push(themeOpts.colorNegative);
             });
 
-            // 6. 边际贡献（中间点）
-            helpers.push(0);
-            values.push(edgeContribution);
-            colors.push(edgeContribution >= 0 ? themeOpts.colorPositive : themeOpts.colorNegative);
-
-            // 7. 固定成本（减项）
-            helpers.push(cumulative - fixedCost);
-            values.push(fixedCost);
-            cumulative -= fixedCost;
-            colors.push(themeOpts.colorNegative);
-
-            // 8. 利润（终点）
+            // 终点利润（确保逻辑闭合）
             helpers.push(0);
             values.push(profit);
             colors.push(profit >= 0 ? themeOpts.colorPositive : themeOpts.colorNegative);
@@ -610,14 +607,42 @@
             const motoFixedCost = parseFloat((data.moto.absolute[5] - data.moto.absolute[6]).toFixed(1));
             const totalFixedCost = parseFloat((data.combined.absolute[5] - data.combined.absolute[6]).toFixed(1));
 
+            const costItemsAbsolute = [
+                {
+                    name: '赔款',
+                    car: data.car.absolute[1],
+                    moto: data.moto.absolute[1],
+                    total: data.combined.absolute[1]
+                },
+                {
+                    name: '手续费',
+                    car: data.car.absolute[2],
+                    moto: data.moto.absolute[2],
+                    total: data.combined.absolute[2]
+                },
+                {
+                    name: '销推费用',
+                    car: data.car.absolute[3],
+                    moto: data.moto.absolute[3],
+                    total: data.combined.absolute[3]
+                },
+                {
+                    name: '人力成本',
+                    car: data.car.absolute[4],
+                    moto: data.moto.absolute[4],
+                    total: data.combined.absolute[4]
+                },
+                {
+                    name: '固定成本',
+                    car: carFixedCost,
+                    moto: motoFixedCost,
+                    total: totalFixedCost
+                }
+            ].sort((a, b) => b.total - a.total);
+
             const waterfallAbsolute = [
                 ['保费', data.car.absolute[0].toFixed(1), data.moto.absolute[0].toFixed(1), data.combined.absolute[0].toFixed(1)],
-                ['赔款', data.car.absolute[1].toFixed(1), data.moto.absolute[1].toFixed(1), data.combined.absolute[1].toFixed(1)],
-                ['手续费', data.car.absolute[2].toFixed(1), data.moto.absolute[2].toFixed(1), data.combined.absolute[2].toFixed(1)],
-                ['销推费用', data.car.absolute[3].toFixed(1), data.moto.absolute[3].toFixed(1), data.combined.absolute[3].toFixed(1)],
-                ['人力成本', data.car.absolute[4].toFixed(1), data.moto.absolute[4].toFixed(1), data.combined.absolute[4].toFixed(1)],
-                ['边际贡献', data.car.absolute[5].toFixed(1), data.moto.absolute[5].toFixed(1), data.combined.absolute[5].toFixed(1)],
-                ['固定成本', carFixedCost.toFixed(1), motoFixedCost.toFixed(1), totalFixedCost.toFixed(1)],
+                ...costItemsAbsolute.map(item => [item.name, item.car.toFixed(1), item.moto.toFixed(1), item.total.toFixed(1)]),
                 ['利润', data.car.absolute[6].toFixed(1), data.moto.absolute[6].toFixed(1), data.combined.absolute[6].toFixed(1)]
             ];
             waterfallAbsolute.forEach(row => csvContent += row.join(',') + '\n');
