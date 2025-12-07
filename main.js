@@ -1,6 +1,36 @@
     // --- CostInsightPro Application Module ---
     const CostInsightPro = (() => {
-        const DOMElements = {}; 
+        const DOMElements = {};
+        const VALIDATION_RULES = {
+            laborBaseRate: { min: 0, max: 150, warningHigh: 60, dangerHigh: 100, label: '人力成本率' },
+            fixedOperationRate: { min: 0, max: 50, warningHigh: 15, dangerHigh: 25, label: '固定运营成本率' },
+            carPremium: { min: 0, max: 5000, warningLow: 200, label: '车险保费(万元)' },
+            carLossRatio: { min: 0, max: 200, warningHigh: 110, dangerHigh: 130, label: '车险赔付率' },
+            carHandlingFeeRate: { min: 0, max: 50, warningHigh: 20, dangerHigh: 35, label: '车险手续费率' },
+            carSalesPromotionRate: { min: 0, max: 30, warningHigh: 10, dangerHigh: 20, label: '车险销推费用率' },
+            carStandardPremiumRatio: { min: 0, max: 5, warningHigh: 2, dangerHigh: 3, label: '车险标保系数' },
+            carAveragePremium: { min: 0, max: 500, warningLow: 60, label: '车险单均保费(元)' },
+            motoAveragePremium: { min: 0, max: 500, warningLow: 50, label: '摩意险件均保费(元)' },
+            motoQuantity: { min: 0, max: 10, warningHigh: 5, label: '摩意险份数' },
+            motoLossRatio: { min: 0, max: 200, warningHigh: 80, dangerHigh: 120, label: '摩意险赔付率' },
+            motoWithCarFeeRate: { min: 0, max: 150, warningHigh: 90, dangerHigh: 120, label: '随车费用率' },
+            motoCardFeeRate: { min: 0, max: 150, warningHigh: 90, dangerHigh: 120, label: '卡单费用率' },
+            motoSalesPromotionRate: { min: 0, max: 30, warningHigh: 10, dangerHigh: 20, label: '摩意险销推费用率' },
+            motoStandardPremiumRatio: { min: 0, max: 5, warningHigh: 2.5, dangerHigh: 3.5, label: '摩意险标保系数' }
+        };
+        const CONVERSION_LABELS = {
+            laborBaseRate: '人力成本基数',
+            fixedOperationRate: '固定运营成本率',
+            carLossRatio: '车险赔付率',
+            carHandlingFeeRate: '车险手续费率',
+            carSalesPromotionRate: '车险销推费用率',
+            carStandardPremiumRatio: '车险标保系数',
+            motoLossRatio: '摩意险赔付率',
+            motoWithCarFeeRate: '随车业务费用率',
+            motoCardFeeRate: '卡单费用率',
+            motoSalesPromotionRate: '摩意险销推费用率',
+            motoStandardPremiumRatio: '摩意险标保系数'
+        };
         const EChartsInstances = {};
         let currentInputValues = {};
         let exportCounter = 1;
@@ -31,6 +61,7 @@
             DOMElements.summaryHeadline = $('#summaryHeadline'); DOMElements.summarySubline = $('#summarySubline'); DOMElements.focusOnProfitBtn = $('#focusOnProfitBtn'); DOMElements.openParametersBtnSecondary = $('#openParametersBtnSecondary');
             DOMElements.motoPremiumRatioDisplay = $('#motoPremiumRatioDisplay');
             DOMElements.inputs = {}; for (const key in APP_CONFIG.INPUT_SELECTORS) DOMElements.inputs[key] = $(APP_CONFIG.INPUT_SELECTORS[key]);
+            DOMElements.statusChips = {}; $$('.status-chip').forEach(chip => { if (chip.dataset.field) DOMElements.statusChips[chip.dataset.field] = chip; });
             DOMElements.kpis = {}; for (const key in APP_CONFIG.KPI_SELECTORS) DOMElements.kpis[key] = $(APP_CONFIG.KPI_SELECTORS[key]);
         }
 
@@ -77,6 +108,105 @@
             });
         }
 
+        // --- 输入辅助：默认填充、步进与校验 ---
+        function clampValue(value, min, max) {
+            let result = value;
+            if (!isNaN(min)) result = Math.max(min, result);
+            if (!isNaN(max)) result = Math.min(max, result);
+            return result;
+        }
+
+        function evaluateValidation(fieldId, value) {
+            const rule = VALIDATION_RULES[fieldId];
+            if (!rule) return { status: 'neutral', message: '' };
+            if (isNaN(value)) return { status: 'error', message: '请输入数值' };
+
+            if (!isNaN(rule.min) && value < rule.min) return { status: 'error', message: `低于下限 ${rule.min}` };
+            if (!isNaN(rule.max) && value > rule.max) return { status: 'error', message: `高于上限 ${rule.max}` };
+
+            if (!isNaN(rule.warningLow) && value < rule.warningLow) return { status: 'warning', message: `低于建议值 ${rule.warningLow}` };
+            if (!isNaN(rule.warningHigh) && value > rule.warningHigh) return { status: 'warning', message: `高于建议值 ${rule.warningHigh}` };
+            if (!isNaN(rule.dangerHigh) && value > rule.dangerHigh) return { status: 'error', message: `超出阈值 ${rule.dangerHigh}` };
+
+            return { status: 'success', message: '在合理区间' };
+        }
+
+        function updateStatus(fieldId, result) {
+            const input = DOMElements.inputs[fieldId];
+            if (!input) return;
+            input.classList.remove('is-valid', 'is-warning', 'is-error');
+            if (result.status === 'success') input.classList.add('is-valid');
+            if (result.status === 'warning') input.classList.add('is-warning');
+            if (result.status === 'error') input.classList.add('is-error');
+            input.title = result.message || '';
+
+            const chip = DOMElements.statusChips ? DOMElements.statusChips[fieldId] : null;
+            if (chip) {
+                chip.className = 'status-chip';
+                chip.textContent = result.message;
+                if (result.status === 'success') chip.classList.add('status-chip--success');
+                if (result.status === 'warning') chip.classList.add('status-chip--warning');
+                if (result.status === 'error') chip.classList.add('status-chip--error');
+                chip.title = `${VALIDATION_RULES[fieldId]?.label || '参数'}：${result.message}`;
+            }
+        }
+
+        function validateField(fieldId) {
+            const input = DOMElements.inputs[fieldId];
+            if (!input) return;
+            const value = parseFloat(input.value);
+            const result = evaluateValidation(fieldId, value);
+            updateStatus(fieldId, result);
+        }
+
+        function validateAllInputs() {
+            Object.keys(DOMElements.inputs).forEach(validateField);
+        }
+
+        function setupDefaultFillers() {
+            $$('.fill-default-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const target = btn.dataset.target;
+                    const input = DOMElements.inputs[target];
+                    const defaultValue = btn.closest('.default-cell')?.querySelector('.default-value')?.dataset.default;
+                    if (input && defaultValue !== undefined) {
+                        input.value = defaultValue;
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                });
+            });
+        }
+
+        function setupSteppers() {
+            $$('.stepper').forEach(stepper => {
+                const targetId = stepper.dataset.target;
+                const setActiveStep = (step) => { stepper.dataset.step = step; };
+                const stepButtons = stepper.querySelectorAll('.stepper__step');
+                stepButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        stepButtons.forEach(b => b.classList.remove('is-active'));
+                        btn.classList.add('is-active');
+                        setActiveStep(btn.dataset.step);
+                    });
+                });
+                if (!stepper.dataset.step && stepButtons[0]) setActiveStep(stepButtons[0].dataset.step);
+
+                stepper.querySelectorAll('.stepper__btn').forEach(actionBtn => {
+                    actionBtn.addEventListener('click', () => {
+                        const input = DOMElements.inputs[targetId];
+                        if (!input) return;
+                        const step = parseFloat(stepper.dataset.step) || 1;
+                        const direction = parseInt(actionBtn.dataset.direction, 10) || 0;
+                        const next = (parseFloat(input.value) || 0) + step * direction;
+                        const min = parseFloat(input.dataset.min);
+                        const max = parseFloat(input.dataset.max);
+                        input.value = clampValue(next, min, max);
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                    });
+                });
+            });
+        }
+
         // --- 更新摩意险保费配比显示 ---
         function updateMotoPremiumRatioDisplay() {
             if (!DOMElements.motoPremiumRatioDisplay) return;
@@ -91,6 +221,34 @@
             } else {
                 DOMElements.motoPremiumRatioDisplay.textContent = '--';
             }
+        }
+
+        function updateConversionHints() {
+            Object.keys(DOMElements.inputs).forEach(key => {
+                const value = parseFloat(DOMElements.inputs[key].value);
+                const hintEl = document.querySelector(`#${key}Conversion`);
+                if (!hintEl) return;
+                if (isNaN(value)) { hintEl.textContent = ''; return; }
+
+                if (CONVERSION_LABELS[key]) {
+                    const factor = VALIDATION_RULES[key]?.label?.includes('费') || VALIDATION_RULES[key]?.label?.includes('率')
+                        ? value / 100
+                        : value;
+                    hintEl.textContent = `= ${factor.toFixed(2)}x ${CONVERSION_LABELS[key]}`;
+                }
+            });
+
+            const carAvg = getInputValue('carAveragePremium');
+            const motoAvg = getInputValue('motoAveragePremium');
+            const qty = getInputValue('motoQuantity');
+            const ratio = carAvg > 0 ? (motoAvg * qty) / carAvg : 0;
+            const ratioText = carAvg > 0 ? `= ${ratio.toFixed(2)}x 保费配比` : '';
+            ['carAveragePremiumConversion', 'motoAveragePremiumConversion', 'motoQuantityConversion'].forEach(id => {
+                const el = document.querySelector(`#${id}`);
+                if (el) el.textContent = ratioText;
+            });
+            const motoPremiumRatioEl = document.querySelector('#motoPremiumRatioConversion');
+            if (motoPremiumRatioEl) motoPremiumRatioEl.textContent = ratioText;
         }
         function applyTheme(theme) { DOMElements.html.classList.remove('theme-light', 'theme-dark'); DOMElements.html.classList.add(`theme-${theme}`); localStorage.setItem(APP_CONFIG.THEME_STORAGE_KEY, theme); updateUI(); }
         function toggleTheme() { const currentTheme = DOMElements.html.classList.contains('theme-dark') ? 'dark' : 'light'; applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
@@ -734,11 +892,13 @@
             const calculatedData = performCalculations(inputs);
             const breakEvenData = calculateBreakEvenAnalysis(inputs);
             lastCalculatedData = calculatedData;
+            validateAllInputs();
             updateKPIs(calculatedData);
             updateChartsForTab(getActiveTab(), calculatedData);
             updateContextInsight(calculatedData, breakEvenData);
             updateThemeLabel();
             updateMotoPremiumRatioDisplay();
+            updateConversionHints();
         }
         function bindEventListeners() {
             DOMElements.themeToggleBtn.addEventListener('click', toggleTheme);
@@ -756,7 +916,7 @@
             const debouncedUpdate = debounce(updateUI, 300);
             for (const key in DOMElements.inputs) {
                 DOMElements.inputs[key].addEventListener('focus', storeCurrentInputValues);
-                DOMElements.inputs[key].addEventListener('input', debouncedUpdate);
+                DOMElements.inputs[key].addEventListener('input', () => { validateField(key); updateConversionHints(); debouncedUpdate(); });
                 DOMElements.inputs[key].addEventListener('change', () => { highlightChangedParameters(); updateUI(); });
             }
             window.addEventListener('resize', () => {
@@ -774,6 +934,8 @@
             initCharts();
             initParameterTableCollapse();
             setupInputAutoFocus();
+            setupDefaultFillers();
+            setupSteppers();
             bindEventListeners();
             storeCurrentInputValues();
             applyScheme(DEFAULT_SCHEME_KEY);
