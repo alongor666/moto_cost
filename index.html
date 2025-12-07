@@ -105,12 +105,14 @@
             </button>
         </header>
         <div class="parameters-drawer__content">
+            <div class="parameters-overview">
+                <div class="param-summary-section">
+                    <div class="param-summary-label">摩意险保费配比</div>
+                    <div class="param-summary-value" id="motoPremiumRatioDisplay">--</div>
+                </div>
+            </div>
             <div class="parameters-layout">
                 <div class="parameters-drawer__aside">
-                    <div class="param-summary-section">
-                        <div class="param-summary-label">摩意险保费配比</div>
-                        <div class="param-summary-value" id="motoPremiumRatioDisplay">--</div>
-                    </div>
                     <div class="category-card" data-category="management">
                         <div class="category-card__label">管理成本</div>
                         <p class="category-card__desc">人力与固定运营成本，适用于全部业务。</p>
@@ -134,6 +136,7 @@
                                 <th class="col-default">默认值</th>
                                 <th class="col-current">当前值</th>
                                 <th class="col-unit">单位</th>
+                                <th class="col-status">状态</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -143,21 +146,69 @@
                                     <span class="collapse-icon">▶</span>
                                     管理成本
                                 </td>
-                                <td colspan="5"></td>
+                                <td colspan="6"></td>
                             </tr>
                             <tr class="param-row management-cost hidden" data-category="management">
                                 <td class="col-product">通用</td>
                                 <td class="col-parameter">人力成本基数</td>
-                                <td class="col-default">2.8</td>
-                                <td class="col-current"><input type="number" id="laborBaseRate" class="param-input" value="2.8" step="0.1" data-next="fixedOperationRate"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="2.8">2.8</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="laborBaseRate">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="laborBaseRate">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="laborBaseRate" class="param-input" value="2.8" step="0.1" data-next="fixedOperationRate" placeholder="输入 0-150%" data-min="0" data-max="150" data-rule="rate" data-default="2.8">
+                                            <div class="stepper" data-target="laborBaseRate">
+                                                <div class="stepper__steps">
+                                                    <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
+                                                    <button type="button" class="stepper__step" data-step="1">1</button>
+                                                    <button type="button" class="stepper__step" data-step="10">10</button>
+                                                </div>
+                                                <div class="stepper__actions">
+                                                    <button type="button" class="stepper__btn" data-direction="-1">-</button>
+                                                    <button type="button" class="stepper__btn" data-direction="1">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="conversion-hint" id="laborBaseRateConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">%</td>
+                                <td class="col-status"><span class="status-chip" data-field="laborBaseRate"></span></td>
                             </tr>
                             <tr class="param-row management-cost hidden" data-category="management">
                                 <td class="col-product">通用</td>
                                 <td class="col-parameter">固定运营成本率</td>
-                                <td class="col-default">7.21</td>
-                                <td class="col-current"><input type="number" id="fixedOperationRate" class="param-input" value="7.21" step="0.01" data-next="carPremium"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="7.21">7.21</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="fixedOperationRate">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="fixedOperationRate">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="fixedOperationRate" class="param-input" value="7.21" step="0.01" data-next="carPremium" placeholder="输入 0-100%" data-min="0" data-max="100" data-rule="rate" data-default="7.21">
+                                            <div class="stepper" data-target="fixedOperationRate">
+                                                <div class="stepper__steps">
+                                                    <button type="button" class="stepper__step is-active" data-step="0.01">0.01</button>
+                                                    <button type="button" class="stepper__step" data-step="0.1">0.1</button>
+                                                    <button type="button" class="stepper__step" data-step="1">1</button>
+                                                </div>
+                                                <div class="stepper__actions">
+                                                    <button type="button" class="stepper__btn" data-direction="-1">-</button>
+                                                    <button type="button" class="stepper__btn" data-direction="1">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="conversion-hint" id="fixedOperationRateConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">%</td>
+                                <td class="col-status"><span class="status-chip" data-field="fixedOperationRate"></span></td>
                             </tr>
 
                             <!-- 变动成本 - 车险 -->
@@ -166,7 +217,7 @@
                                     <span class="collapse-icon">▶</span>
                                     变动成本
                                 </td>
-                                <td class="col-product" colspan="5">
+                                <td class="col-product" colspan="6">
                                     <span class="product-icon">▶</span>
                                     车险
                                 </td>
@@ -174,42 +225,151 @@
                             <tr class="param-row variable-car-cost hidden" data-category="variable-car">
                                 <td class="col-product">车险</td>
                                 <td class="col-parameter">车险保费</td>
-                                <td class="col-default">1000</td>
-                                <td class="col-current"><input type="number" id="carPremium" class="param-input" value="1000" step="100" data-next="carLossRatio"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="1000">1000</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="carPremium">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="carPremium">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="carPremium" class="param-input" value="1000" step="100" data-next="carLossRatio" placeholder="输入 万元" data-min="0" data-max="5000" data-default="1000">
+                                        </div>
+                                        <div class="conversion-hint" id="carPremiumConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">万元</td>
+                                <td class="col-status"><span class="status-chip" data-field="carPremium"></span></td>
                             </tr>
                             <tr class="param-row variable-car-cost hidden" data-category="variable-car">
                                 <td class="col-product">车险</td>
                                 <td class="col-parameter">赔付率</td>
-                                <td class="col-default">104.2</td>
-                                <td class="col-current"><input type="number" id="carLossRatio" class="param-input" value="104.2" step="0.1" data-next="carHandlingFeeRate"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="104.2">104.2</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="carLossRatio">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="carLossRatio">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="carLossRatio" class="param-input" value="104.2" step="0.1" data-next="carHandlingFeeRate" placeholder="输入 0-200%" data-min="0" data-max="200" data-rule="rate" data-default="104.2">
+                                            <div class="stepper" data-target="carLossRatio">
+                                                <div class="stepper__steps">
+                                                    <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
+                                                    <button type="button" class="stepper__step" data-step="1">1</button>
+                                                    <button type="button" class="stepper__step" data-step="10">10</button>
+                                                </div>
+                                                <div class="stepper__actions">
+                                                    <button type="button" class="stepper__btn" data-direction="-1">-</button>
+                                                    <button type="button" class="stepper__btn" data-direction="1">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="conversion-hint" id="carLossRatioConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">%</td>
+                                <td class="col-status"><span class="status-chip" data-field="carLossRatio"></span></td>
                             </tr>
                             <tr class="param-row variable-car-cost hidden" data-category="variable-car">
                                 <td class="col-product">车险</td>
                                 <td class="col-parameter">手续费率</td>
-                                <td class="col-default">0</td>
-                                <td class="col-current"><input type="number" id="carHandlingFeeRate" class="param-input" value="0" step="0.1" data-next="carSalesPromotionRate"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="0">0</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="carHandlingFeeRate">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="carHandlingFeeRate">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="carHandlingFeeRate" class="param-input" value="0" step="0.1" data-next="carSalesPromotionRate" placeholder="输入 0-50%" data-min="0" data-max="50" data-rule="rate" data-default="0">
+                                            <div class="stepper" data-target="carHandlingFeeRate">
+                                                <div class="stepper__steps">
+                                                    <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
+                                                    <button type="button" class="stepper__step" data-step="1">1</button>
+                                                    <button type="button" class="stepper__step" data-step="10">10</button>
+                                                </div>
+                                                <div class="stepper__actions">
+                                                    <button type="button" class="stepper__btn" data-direction="-1">-</button>
+                                                    <button type="button" class="stepper__btn" data-direction="1">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="conversion-hint" id="carHandlingFeeRateConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">%</td>
+                                <td class="col-status"><span class="status-chip" data-field="carHandlingFeeRate"></span></td>
                             </tr>
                             <tr class="param-row variable-car-cost hidden" data-category="variable-car">
                                 <td class="col-product">车险</td>
                                 <td class="col-parameter">销推费用率</td>
-                                <td class="col-default">0.3</td>
-                                <td class="col-current"><input type="number" id="carSalesPromotionRate" class="param-input" value="0.3" step="0.1" data-next="carStandardPremiumRatio"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="0.3">0.3</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="carSalesPromotionRate">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="carSalesPromotionRate">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="carSalesPromotionRate" class="param-input" value="0.3" step="0.1" data-next="carStandardPremiumRatio" placeholder="输入 0-30%" data-min="0" data-max="30" data-rule="rate" data-default="0.3">
+                                            <div class="stepper" data-target="carSalesPromotionRate">
+                                                <div class="stepper__steps">
+                                                    <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
+                                                    <button type="button" class="stepper__step" data-step="1">1</button>
+                                                    <button type="button" class="stepper__step" data-step="10">10</button>
+                                                </div>
+                                                <div class="stepper__actions">
+                                                    <button type="button" class="stepper__btn" data-direction="-1">-</button>
+                                                    <button type="button" class="stepper__btn" data-direction="1">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="conversion-hint" id="carSalesPromotionRateConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">%</td>
+                                <td class="col-status"><span class="status-chip" data-field="carSalesPromotionRate"></span></td>
                             </tr>
                             <tr class="param-row variable-car-cost hidden" data-category="variable-car">
                                 <td class="col-product">车险</td>
                                 <td class="col-parameter">标保系数</td>
-                                <td class="col-default">0.5</td>
-                                <td class="col-current"><input type="number" id="carStandardPremiumRatio" class="param-input" value="0.5" step="0.1" data-next="carAveragePremium"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="0.5">0.5</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="carStandardPremiumRatio">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="carStandardPremiumRatio">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="carStandardPremiumRatio" class="param-input" value="0.5" step="0.1" data-next="carAveragePremium" placeholder="输入 0-5" data-min="0" data-max="5" data-rule="ratio" data-default="0.5">
+                                            <div class="stepper" data-target="carStandardPremiumRatio">
+                                                <div class="stepper__steps">
+                                                    <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
+                                                    <button type="button" class="stepper__step" data-step="1">1</button>
+                                                    <button type="button" class="stepper__step" data-step="10">10</button>
+                                                </div>
+                                                <div class="stepper__actions">
+                                                    <button type="button" class="stepper__btn" data-direction="-1">-</button>
+                                                    <button type="button" class="stepper__btn" data-direction="1">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="conversion-hint" id="carStandardPremiumRatioConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">-</td>
+                                <td class="col-status"><span class="status-chip" data-field="carStandardPremiumRatio"></span></td>
                             </tr>
 
                             <!-- 变动成本 - 摩意险 -->
                             <tr class="category-row collapsible collapsed" data-category="variable-moto">
-                                <td class="col-product" colspan="5">
+                                <td class="col-product" colspan="6">
                                     <span class="product-icon">▶</span>
                                     摩意险
                                 </td>
@@ -217,58 +377,217 @@
                             <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">摩托车车险单均保费</td>
-                                <td class="col-default">120</td>
-                                <td class="col-current"><input type="number" id="carAveragePremium" class="param-input" value="120" step="1" data-next="motoAveragePremium"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="120">120</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="carAveragePremium">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="carAveragePremium">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="carAveragePremium" class="param-input" value="120" step="1" data-next="motoAveragePremium" placeholder="输入 元" data-min="0" data-max="500" data-default="120">
+                                        </div>
+                                        <div class="conversion-hint" id="carAveragePremiumConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">元</td>
+                                <td class="col-status"><span class="status-chip" data-field="carAveragePremium"></span></td>
                             </tr>
                             <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">摩意险件均保费</td>
-                                <td class="col-default">100</td>
-                                <td class="col-current"><input type="number" id="motoAveragePremium" class="param-input" value="100" step="1" data-next="motoQuantity"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="100">100</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoAveragePremium">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="motoAveragePremium">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="motoAveragePremium" class="param-input" value="100" step="1" data-next="motoQuantity" placeholder="输入 元" data-min="0" data-max="500" data-default="100">
+                                        </div>
+                                        <div class="conversion-hint" id="motoAveragePremiumConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">元</td>
+                                <td class="col-status"><span class="status-chip" data-field="motoAveragePremium"></span></td>
                             </tr>
                             <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">摩意险份数</td>
-                                <td class="col-default">2</td>
-                                <td class="col-current"><input type="number" id="motoQuantity" class="param-input" value="2" step="0.01" data-next="motoLossRatio"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="2">2</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoQuantity">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="motoQuantity">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="motoQuantity" class="param-input" value="2" step="0.01" data-next="motoLossRatio" placeholder="输入 份数" data-min="0" data-max="10" data-default="2">
+                                        </div>
+                                        <div class="conversion-hint" id="motoQuantityConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">份</td>
+                                <td class="col-status"><span class="status-chip" data-field="motoQuantity"></span></td>
                             </tr>
                             <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">赔付率</td>
-                                <td class="col-default">4</td>
-                                <td class="col-current"><input type="number" id="motoLossRatio" class="param-input" value="4" step="0.1" data-next="motoWithCarFeeRate"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="4">4</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoLossRatio">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="motoLossRatio">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="motoLossRatio" class="param-input" value="4" step="0.1" data-next="motoWithCarFeeRate" placeholder="输入 0-200%" data-min="0" data-max="200" data-rule="rate" data-default="4">
+                                            <div class="stepper" data-target="motoLossRatio">
+                                                <div class="stepper__steps">
+                                                    <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
+                                                    <button type="button" class="stepper__step" data-step="1">1</button>
+                                                    <button type="button" class="stepper__step" data-step="10">10</button>
+                                                </div>
+                                                <div class="stepper__actions">
+                                                    <button type="button" class="stepper__btn" data-direction="-1">-</button>
+                                                    <button type="button" class="stepper__btn" data-direction="1">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="conversion-hint" id="motoLossRatioConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">%</td>
+                                <td class="col-status"><span class="status-chip" data-field="motoLossRatio"></span></td>
                             </tr>
                             <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">摩意险随车业务费用率</td>
-                                <td class="col-default">65</td>
-                                <td class="col-current"><input type="number" id="motoWithCarFeeRate" class="param-input" value="65" step="0.1" data-next="motoCardFeeRate"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="65">65</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoWithCarFeeRate">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="motoWithCarFeeRate">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="motoWithCarFeeRate" class="param-input" value="65" step="0.1" data-next="motoCardFeeRate" placeholder="输入 0-200%" data-min="0" data-max="200" data-rule="rate" data-default="65">
+                                            <div class="stepper" data-target="motoWithCarFeeRate">
+                                                <div class="stepper__steps">
+                                                    <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
+                                                    <button type="button" class="stepper__step" data-step="1">1</button>
+                                                    <button type="button" class="stepper__step" data-step="10">10</button>
+                                                </div>
+                                                <div class="stepper__actions">
+                                                    <button type="button" class="stepper__btn" data-direction="-1">-</button>
+                                                    <button type="button" class="stepper__btn" data-direction="1">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="conversion-hint" id="motoWithCarFeeRateConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">%</td>
+                                <td class="col-status"><span class="status-chip" data-field="motoWithCarFeeRate"></span></td>
                             </tr>
                             <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">摩意险卡单费用率</td>
-                                <td class="col-default">85</td>
-                                <td class="col-current"><input type="number" id="motoCardFeeRate" class="param-input" value="85" step="0.1" data-next="motoSalesPromotionRate"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="85">85</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoCardFeeRate">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="motoCardFeeRate">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="motoCardFeeRate" class="param-input" value="85" step="0.1" data-next="motoSalesPromotionRate" placeholder="输入 0-200%" data-min="0" data-max="200" data-rule="rate" data-default="85">
+                                            <div class="stepper" data-target="motoCardFeeRate">
+                                                <div class="stepper__steps">
+                                                    <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
+                                                    <button type="button" class="stepper__step" data-step="1">1</button>
+                                                    <button type="button" class="stepper__step" data-step="10">10</button>
+                                                </div>
+                                                <div class="stepper__actions">
+                                                    <button type="button" class="stepper__btn" data-direction="-1">-</button>
+                                                    <button type="button" class="stepper__btn" data-direction="1">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="conversion-hint" id="motoCardFeeRateConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">%</td>
+                                <td class="col-status"><span class="status-chip" data-field="motoCardFeeRate"></span></td>
                             </tr>
                             <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">销售推动费用率</td>
-                                <td class="col-default">0.9</td>
-                                <td class="col-current"><input type="number" id="motoSalesPromotionRate" class="param-input" value="0.9" step="0.1" data-next="motoStandardPremiumRatio"></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="0.9">0.9</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoSalesPromotionRate">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="motoSalesPromotionRate">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="motoSalesPromotionRate" class="param-input" value="0.9" step="0.1" data-next="motoStandardPremiumRatio" placeholder="输入 0-30%" data-min="0" data-max="30" data-rule="rate" data-default="0.9">
+                                            <div class="stepper" data-target="motoSalesPromotionRate">
+                                                <div class="stepper__steps">
+                                                    <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
+                                                    <button type="button" class="stepper__step" data-step="1">1</button>
+                                                    <button type="button" class="stepper__step" data-step="10">10</button>
+                                                </div>
+                                                <div class="stepper__actions">
+                                                    <button type="button" class="stepper__btn" data-direction="-1">-</button>
+                                                    <button type="button" class="stepper__btn" data-direction="1">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="conversion-hint" id="motoSalesPromotionRateConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">%</td>
+                                <td class="col-status"><span class="status-chip" data-field="motoSalesPromotionRate"></span></td>
                             </tr>
                             <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
                                 <td class="col-product">摩意险</td>
                                 <td class="col-parameter">标保系数</td>
-                                <td class="col-default">1.8</td>
-                                <td class="col-current"><input type="number" id="motoStandardPremiumRatio" class="param-input" value="1.8" step="0.1" data-next=""></td>
+                                <td class="col-default">
+                                    <div class="default-cell">
+                                        <span class="default-value" data-default="1.8">1.8</span>
+                                        <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoStandardPremiumRatio">填入</button>
+                                    </div>
+                                </td>
+                                <td class="col-current">
+                                    <div class="param-control" data-field="motoStandardPremiumRatio">
+                                        <div class="input-with-tools">
+                                            <input type="number" id="motoStandardPremiumRatio" class="param-input" value="1.8" step="0.1" data-next="" placeholder="输入 0-5" data-min="0" data-max="5" data-rule="ratio" data-default="1.8">
+                                            <div class="stepper" data-target="motoStandardPremiumRatio">
+                                                <div class="stepper__steps">
+                                                    <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
+                                                    <button type="button" class="stepper__step" data-step="1">1</button>
+                                                    <button type="button" class="stepper__step" data-step="10">10</button>
+                                                </div>
+                                                <div class="stepper__actions">
+                                                    <button type="button" class="stepper__btn" data-direction="-1">-</button>
+                                                    <button type="button" class="stepper__btn" data-direction="1">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="conversion-hint" id="motoStandardPremiumRatioConversion"></div>
+                                    </div>
+                                </td>
                                 <td class="col-unit">-</td>
+                                <td class="col-status"><span class="status-chip" data-field="motoStandardPremiumRatio"></span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -289,477 +608,6 @@
                 <button class="btn btn--ghost" id="resetParametersBtn">重置</button>
                 <button class="btn btn--primary" id="applyParametersBtn">应用</button>
             </div>
-            <!-- 摩意险保费配比实时显示 -->
-            <div class="param-summary-section">
-                <div class="param-summary-label">摩意险保费配比</div>
-                <div class="param-summary-value" id="motoPremiumRatioDisplay">--</div>
-            </div>
-
-            <!-- 表格化参数结构 -->
-            <table class="params-table">
-                <thead>
-                    <tr>
-                        <th class="col-category">成本类型</th>
-                        <th class="col-product">产品类型</th>
-                        <th class="col-parameter">参数名称</th>
-                        <th class="col-default">默认值</th>
-                        <th class="col-current">当前值</th>
-                        <th class="col-unit">单位</th>
-                        <th class="col-status">状态</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- 管理成本 -->
-                    <tr class="category-row collapsible collapsed" data-category="management">
-                        <td class="col-category" rowspan="2">
-                            <span class="collapse-icon">▶</span>
-                            管理成本
-                        </td>
-                        <td colspan="6"></td>
-                    </tr>
-                    <tr class="param-row management-cost hidden" data-category="management">
-                        <td class="col-product">通用</td>
-                        <td class="col-parameter">人力成本基数</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="2.8">2.8</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="laborBaseRate">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="laborBaseRate">
-                                <div class="input-with-tools">
-                                    <input type="number" id="laborBaseRate" class="param-input" value="2.8" step="0.1" data-next="fixedOperationRate" placeholder="输入 0-150%" data-min="0" data-max="150" data-rule="rate" data-default="2.8">
-                                    <div class="stepper" data-target="laborBaseRate">
-                                        <div class="stepper__steps">
-                                            <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
-                                            <button type="button" class="stepper__step" data-step="1">1</button>
-                                            <button type="button" class="stepper__step" data-step="10">10</button>
-                                        </div>
-                                        <div class="stepper__actions">
-                                            <button type="button" class="stepper__btn" data-direction="-1">-</button>
-                                            <button type="button" class="stepper__btn" data-direction="1">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="conversion-hint" id="laborBaseRateConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">%</td>
-                        <td class="col-status"><span class="status-chip" data-field="laborBaseRate"></span></td>
-                    </tr>
-                    <tr class="param-row management-cost hidden" data-category="management">
-                        <td class="col-product">通用</td>
-                        <td class="col-parameter">固定运营成本率</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="7.21">7.21</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="fixedOperationRate">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="fixedOperationRate">
-                                <div class="input-with-tools">
-                                    <input type="number" id="fixedOperationRate" class="param-input" value="7.21" step="0.01" data-next="carPremium" placeholder="输入 0-50%" data-min="0" data-max="50" data-rule="rate" data-default="7.21">
-                                    <div class="stepper" data-target="fixedOperationRate">
-                                        <div class="stepper__steps">
-                                            <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
-                                            <button type="button" class="stepper__step" data-step="1">1</button>
-                                            <button type="button" class="stepper__step" data-step="10">10</button>
-                                        </div>
-                                        <div class="stepper__actions">
-                                            <button type="button" class="stepper__btn" data-direction="-1">-</button>
-                                            <button type="button" class="stepper__btn" data-direction="1">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="conversion-hint" id="fixedOperationRateConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">%</td>
-                        <td class="col-status"><span class="status-chip" data-field="fixedOperationRate"></span></td>
-                    </tr>
-
-                    <!-- 变动成本 - 车险 -->
-                    <tr class="category-row collapsible collapsed" data-category="variable-car">
-                        <td class="col-category" rowspan="6">
-                            <span class="collapse-icon">▶</span>
-                            变动成本
-                        </td>
-                        <td class="col-product" colspan="6">
-                            <span class="product-icon">▶</span>
-                            车险
-                        </td>
-                    </tr>
-                    <tr class="param-row variable-car-cost hidden" data-category="variable-car">
-                        <td class="col-product">车险</td>
-                        <td class="col-parameter">车险保费</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="1000">1000</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="carPremium">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="carPremium">
-                                <div class="input-with-tools">
-                                    <input type="number" id="carPremium" class="param-input" value="1000" step="100" data-next="carLossRatio" placeholder="输入 万元" data-min="0" data-max="5000" data-default="1000">
-                                </div>
-                                <div class="conversion-hint" id="carPremiumConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">万元</td>
-                        <td class="col-status"><span class="status-chip" data-field="carPremium"></span></td>
-                    </tr>
-                    <tr class="param-row variable-car-cost hidden" data-category="variable-car">
-                        <td class="col-product">车险</td>
-                        <td class="col-parameter">赔付率</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="104.2">104.2</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="carLossRatio">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="carLossRatio">
-                                <div class="input-with-tools">
-                                    <input type="number" id="carLossRatio" class="param-input" value="104.2" step="0.1" data-next="carHandlingFeeRate" placeholder="输入 0-200%" data-min="0" data-max="200" data-rule="rate" data-default="104.2">
-                                    <div class="stepper" data-target="carLossRatio">
-                                        <div class="stepper__steps">
-                                            <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
-                                            <button type="button" class="stepper__step" data-step="1">1</button>
-                                            <button type="button" class="stepper__step" data-step="10">10</button>
-                                        </div>
-                                        <div class="stepper__actions">
-                                            <button type="button" class="stepper__btn" data-direction="-1">-</button>
-                                            <button type="button" class="stepper__btn" data-direction="1">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="conversion-hint" id="carLossRatioConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">%</td>
-                        <td class="col-status"><span class="status-chip" data-field="carLossRatio"></span></td>
-                    </tr>
-                    <tr class="param-row variable-car-cost hidden" data-category="variable-car">
-                        <td class="col-product">车险</td>
-                        <td class="col-parameter">手续费率</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="0">0</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="carHandlingFeeRate">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="carHandlingFeeRate">
-                                <div class="input-with-tools">
-                                    <input type="number" id="carHandlingFeeRate" class="param-input" value="0" step="0.1" data-next="carSalesPromotionRate" placeholder="输入 0-50%" data-min="0" data-max="50" data-rule="rate" data-default="0">
-                                    <div class="stepper" data-target="carHandlingFeeRate">
-                                        <div class="stepper__steps">
-                                            <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
-                                            <button type="button" class="stepper__step" data-step="1">1</button>
-                                            <button type="button" class="stepper__step" data-step="10">10</button>
-                                        </div>
-                                        <div class="stepper__actions">
-                                            <button type="button" class="stepper__btn" data-direction="-1">-</button>
-                                            <button type="button" class="stepper__btn" data-direction="1">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="conversion-hint" id="carHandlingFeeRateConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">%</td>
-                        <td class="col-status"><span class="status-chip" data-field="carHandlingFeeRate"></span></td>
-                    </tr>
-                    <tr class="param-row variable-car-cost hidden" data-category="variable-car">
-                        <td class="col-product">车险</td>
-                        <td class="col-parameter">销推费用率</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="0.3">0.3</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="carSalesPromotionRate">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="carSalesPromotionRate">
-                                <div class="input-with-tools">
-                                    <input type="number" id="carSalesPromotionRate" class="param-input" value="0.3" step="0.1" data-next="carStandardPremiumRatio" placeholder="输入 0-30%" data-min="0" data-max="30" data-rule="rate" data-default="0.3">
-                                    <div class="stepper" data-target="carSalesPromotionRate">
-                                        <div class="stepper__steps">
-                                            <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
-                                            <button type="button" class="stepper__step" data-step="1">1</button>
-                                            <button type="button" class="stepper__step" data-step="10">10</button>
-                                        </div>
-                                        <div class="stepper__actions">
-                                            <button type="button" class="stepper__btn" data-direction="-1">-</button>
-                                            <button type="button" class="stepper__btn" data-direction="1">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="conversion-hint" id="carSalesPromotionRateConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">%</td>
-                        <td class="col-status"><span class="status-chip" data-field="carSalesPromotionRate"></span></td>
-                    </tr>
-                    <tr class="param-row variable-car-cost hidden" data-category="variable-car">
-                        <td class="col-product">车险</td>
-                        <td class="col-parameter">标保系数</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="0.5">0.5</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="carStandardPremiumRatio">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="carStandardPremiumRatio">
-                                <div class="input-with-tools">
-                                    <input type="number" id="carStandardPremiumRatio" class="param-input" value="0.5" step="0.1" data-next="carAveragePremium" placeholder="输入 0-5" data-min="0" data-max="5" data-rule="ratio" data-default="0.5">
-                                    <div class="stepper" data-target="carStandardPremiumRatio">
-                                        <div class="stepper__steps">
-                                            <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
-                                            <button type="button" class="stepper__step" data-step="1">1</button>
-                                            <button type="button" class="stepper__step" data-step="10">10</button>
-                                        </div>
-                                        <div class="stepper__actions">
-                                            <button type="button" class="stepper__btn" data-direction="-1">-</button>
-                                            <button type="button" class="stepper__btn" data-direction="1">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="conversion-hint" id="carStandardPremiumRatioConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">-</td>
-                        <td class="col-status"><span class="status-chip" data-field="carStandardPremiumRatio"></span></td>
-                    </tr>
-
-                    <!-- 变动成本 - 摩意险 -->
-                    <tr class="category-row collapsible collapsed" data-category="variable-moto">
-                        <td class="col-product" colspan="6">
-                            <span class="product-icon">▶</span>
-                            摩意险
-                        </td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">摩托车车险单均保费</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="120">120</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="carAveragePremium">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="carAveragePremium">
-                                <div class="input-with-tools">
-                                    <input type="number" id="carAveragePremium" class="param-input" value="120" step="1" data-next="motoAveragePremium" placeholder="输入 元" data-min="0" data-max="500" data-default="120">
-                                </div>
-                                <div class="conversion-hint" id="carAveragePremiumConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">元</td>
-                        <td class="col-status"><span class="status-chip" data-field="carAveragePremium"></span></td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">摩意险件均保费</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="100">100</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoAveragePremium">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="motoAveragePremium">
-                                <div class="input-with-tools">
-                                    <input type="number" id="motoAveragePremium" class="param-input" value="100" step="1" data-next="motoQuantity" placeholder="输入 元" data-min="0" data-max="500" data-default="100">
-                                </div>
-                                <div class="conversion-hint" id="motoAveragePremiumConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">元</td>
-                        <td class="col-status"><span class="status-chip" data-field="motoAveragePremium"></span></td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">摩意险份数</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="2">2</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoQuantity">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="motoQuantity">
-                                <div class="input-with-tools">
-                                    <input type="number" id="motoQuantity" class="param-input" value="2" step="0.01" data-next="motoLossRatio" placeholder="输入 份数" data-min="0" data-max="10" data-default="2">
-                                </div>
-                                <div class="conversion-hint" id="motoQuantityConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">份</td>
-                        <td class="col-status"><span class="status-chip" data-field="motoQuantity"></span></td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">赔付率</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="4">4</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoLossRatio">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="motoLossRatio">
-                                <div class="input-with-tools">
-                                    <input type="number" id="motoLossRatio" class="param-input" value="4" step="0.1" data-next="motoWithCarFeeRate" placeholder="输入 0-200%" data-min="0" data-max="200" data-rule="rate" data-default="4">
-                                    <div class="stepper" data-target="motoLossRatio">
-                                        <div class="stepper__steps">
-                                            <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
-                                            <button type="button" class="stepper__step" data-step="1">1</button>
-                                            <button type="button" class="stepper__step" data-step="10">10</button>
-                                        </div>
-                                        <div class="stepper__actions">
-                                            <button type="button" class="stepper__btn" data-direction="-1">-</button>
-                                            <button type="button" class="stepper__btn" data-direction="1">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="conversion-hint" id="motoLossRatioConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">%</td>
-                        <td class="col-status"><span class="status-chip" data-field="motoLossRatio"></span></td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">摩意险随车业务费用率</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="65">65</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoWithCarFeeRate">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="motoWithCarFeeRate">
-                                <div class="input-with-tools">
-                                    <input type="number" id="motoWithCarFeeRate" class="param-input" value="65" step="0.1" data-next="motoCardFeeRate" placeholder="输入 0-150%" data-min="0" data-max="150" data-rule="rate" data-default="65">
-                                    <div class="stepper" data-target="motoWithCarFeeRate">
-                                        <div class="stepper__steps">
-                                            <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
-                                            <button type="button" class="stepper__step" data-step="1">1</button>
-                                            <button type="button" class="stepper__step" data-step="10">10</button>
-                                        </div>
-                                        <div class="stepper__actions">
-                                            <button type="button" class="stepper__btn" data-direction="-1">-</button>
-                                            <button type="button" class="stepper__btn" data-direction="1">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="conversion-hint" id="motoWithCarFeeRateConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">%</td>
-                        <td class="col-status"><span class="status-chip" data-field="motoWithCarFeeRate"></span></td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">摩意险卡单费用率</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="85">85</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoCardFeeRate">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="motoCardFeeRate">
-                                <div class="input-with-tools">
-                                    <input type="number" id="motoCardFeeRate" class="param-input" value="85" step="0.1" data-next="motoSalesPromotionRate" placeholder="输入 0-150%" data-min="0" data-max="150" data-rule="rate" data-default="85">
-                                    <div class="stepper" data-target="motoCardFeeRate">
-                                        <div class="stepper__steps">
-                                            <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
-                                            <button type="button" class="stepper__step" data-step="1">1</button>
-                                            <button type="button" class="stepper__step" data-step="10">10</button>
-                                        </div>
-                                        <div class="stepper__actions">
-                                            <button type="button" class="stepper__btn" data-direction="-1">-</button>
-                                            <button type="button" class="stepper__btn" data-direction="1">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="conversion-hint" id="motoCardFeeRateConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">%</td>
-                        <td class="col-status"><span class="status-chip" data-field="motoCardFeeRate"></span></td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">销售推动费用率</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="0.9">0.9</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoSalesPromotionRate">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="motoSalesPromotionRate">
-                                <div class="input-with-tools">
-                                    <input type="number" id="motoSalesPromotionRate" class="param-input" value="0.9" step="0.1" data-next="motoStandardPremiumRatio" placeholder="输入 0-30%" data-min="0" data-max="30" data-rule="rate" data-default="0.9">
-                                    <div class="stepper" data-target="motoSalesPromotionRate">
-                                        <div class="stepper__steps">
-                                            <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
-                                            <button type="button" class="stepper__step" data-step="1">1</button>
-                                            <button type="button" class="stepper__step" data-step="10">10</button>
-                                        </div>
-                                        <div class="stepper__actions">
-                                            <button type="button" class="stepper__btn" data-direction="-1">-</button>
-                                            <button type="button" class="stepper__btn" data-direction="1">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="conversion-hint" id="motoSalesPromotionRateConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">%</td>
-                        <td class="col-status"><span class="status-chip" data-field="motoSalesPromotionRate"></span></td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">标保系数</td>
-                        <td class="col-default">
-                            <div class="default-cell">
-                                <span class="default-value" data-default="1.8">1.8</span>
-                                <button class="btn btn--ghost btn--sm fill-default-btn" data-target="motoStandardPremiumRatio">填入</button>
-                            </div>
-                        </td>
-                        <td class="col-current">
-                            <div class="param-control" data-field="motoStandardPremiumRatio">
-                                <div class="input-with-tools">
-                                    <input type="number" id="motoStandardPremiumRatio" class="param-input" value="1.8" step="0.1" data-next="" placeholder="输入 0-5" data-min="0" data-max="5" data-rule="ratio" data-default="1.8">
-                                    <div class="stepper" data-target="motoStandardPremiumRatio">
-                                        <div class="stepper__steps">
-                                            <button type="button" class="stepper__step is-active" data-step="0.1">0.1</button>
-                                            <button type="button" class="stepper__step" data-step="1">1</button>
-                                            <button type="button" class="stepper__step" data-step="10">10</button>
-                                        </div>
-                                        <div class="stepper__actions">
-                                            <button type="button" class="stepper__btn" data-direction="-1">-</button>
-                                            <button type="button" class="stepper__btn" data-direction="1">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="conversion-hint" id="motoStandardPremiumRatioConversion"></div>
-                            </div>
-                        </td>
-                        <td class="col-unit">-</td>
-                        <td class="col-status"><span class="status-chip" data-field="motoStandardPremiumRatio"></span></td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </aside>
 
