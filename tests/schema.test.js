@@ -1,6 +1,6 @@
-const assert = require('assert');
-const { PARAMETER_SCHEMA, PARAMETER_MAP, VALIDATION_RULES, CONVERSION_LABELS } = require('../src/config/parameters.js');
-const { APP_CONFIG } = require('../config.js');
+import assert from 'assert';
+import { PARAMETER_SCHEMA, PARAMETER_MAP, VALIDATION_RULES, CONVERSION_LABELS } from '../src/config/parameters.js';
+import { APP_CONFIG } from '../config.js';
 
 assert(Array.isArray(PARAMETER_SCHEMA) && PARAMETER_SCHEMA.length > 0, '参数 schema 不能为空');
 
