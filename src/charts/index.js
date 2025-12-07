@@ -63,8 +63,22 @@ export function createAbsoluteChartOption(DOMElements, data, rateData, chartTitl
     const helpers = new Array(values.length).fill(0);
     const colors = values.map((val, idx) => determineColor(val, config[indicators[idx]], themeOpts));
 
-    helpers[0] = values[0];
-    for (let i = 1; i < values.length; i++) helpers[i] = helpers[i - 1] - values[i];
+    // Waterfall Logic
+    let currentHeight = 0;
+    const totalKeys = ['PREMIUM', 'PROFIT'];
+
+    for (let i = 0; i < values.length; i++) {
+        const key = indicators[i];
+        if (totalKeys.includes(key)) {
+            helpers[i] = 0;
+            currentHeight = values[i];
+        } else {
+            // Deduction (Costs)
+            // Ensure we handle floating point precision issues if needed, but simple subtraction usually fine for display
+            helpers[i] = currentHeight - values[i];
+            currentHeight = helpers[i];
+        }
+    }
 
     const seriesData = values.map((value, idx) => ({
         value,
@@ -81,8 +95,26 @@ export function createAbsoluteChartOption(DOMElements, data, rateData, chartTitl
         xAxis: { ...themeOpts.xAxis, data: xAxisData },
         yAxis: themeOpts.yAxis,
         series: [
-            { ...themeOpts.seriesBase, name: '辅助', itemStyle: { color: 'transparent' }, emphasis: { itemStyle: { color: 'transparent' } }, data: helpers, animation: false },
-            { ...themeOpts.seriesBase, name: '数值', barWidth: '50%', data: seriesData, label: { ...themeOpts.seriesBase.label, formatter: (params) => `${parseFloat(params.value).toFixed(1)}${unit}`, color: undefined } }
+            { 
+                ...themeOpts.seriesBase, 
+                name: '辅助', 
+                stack: 'total', // Enable stacking
+                itemStyle: { color: 'transparent' }, 
+                emphasis: { itemStyle: { color: 'transparent' } }, 
+                data: helpers, 
+                animation: false,
+                barGap: '0%', // Reset barGap
+                label: { show: false } // 隐藏辅助系列的标签
+            },
+            { 
+                ...themeOpts.seriesBase, 
+                name: '数值', 
+                stack: 'total', // Enable stacking
+                barWidth: '50%', 
+                data: seriesData, 
+                label: { ...themeOpts.seriesBase.label, formatter: (params) => `${parseFloat(params.value).toFixed(1)}${unit}`, color: undefined },
+                barGap: '0%' // Reset barGap
+            }
         ]
     };
 }
@@ -96,8 +128,21 @@ export function createRateChartOption(DOMElements, data, chartTitle) {
     const helpers = new Array(values.length).fill(0);
     const colors = values.map((val, idx) => determineColor(val / 100, config[indicators[idx]], themeOpts));
 
-    helpers[0] = 100;
-    for (let i = 1; i < values.length; i++) helpers[i] = helpers[i - 1] - values[i];
+    // Waterfall Logic for Rate Chart
+    let currentHeight = 100;
+    const totalKeys = ['TCR'];
+
+    for (let i = 0; i < values.length; i++) {
+        const key = indicators[i];
+        if (totalKeys.includes(key)) {
+            helpers[i] = 0;
+            currentHeight = values[i];
+        } else {
+            // Deduction (Costs)
+            helpers[i] = currentHeight - values[i];
+            currentHeight = helpers[i];
+        }
+    }
 
     return {
         backgroundColor: 'transparent',
@@ -115,7 +160,8 @@ export function createRateChartOption(DOMElements, data, chartTitle) {
                 itemStyle: { color: 'transparent' },
                 emphasis: { itemStyle: { color: 'transparent' } },
                 data: helpers,
-                animation: false
+                animation: false,
+                label: { show: false } // 隐藏辅助系列的标签
             },
             {
                 name: '数值',

@@ -2,6 +2,7 @@ export const PARAMETER_SCHEMA = [
     { id: 'laborBaseRate', label: '人力成本基数', type: 'percent', unit: '%', min: 0, max: 150, warningHigh: 60, dangerHigh: 100, defaultValue: 2.8, category: 'management', product: '通用', conversionLabel: '人力成本基数' },
     { id: 'fixedOperationRate', label: '固定运营成本率', type: 'percent', unit: '%', min: 0, max: 50, warningHigh: 15, dangerHigh: 25, defaultValue: 7.21, category: 'management', product: '通用', conversionLabel: '固定运营成本率' },
     { id: 'carPremium', label: '车险保费(万元)', type: 'amount', unit: '万元', min: 0, max: 5000, warningLow: 200, defaultValue: 1000, category: 'variable-car', product: '车险' },
+    { id: 'motoPremium', label: '摩意险保费(万元)', type: 'amount', unit: '万元', min: 0, max: 5000, warningLow: 100, defaultValue: 1667, category: 'variable-moto', product: '摩意险' },
     { id: 'carLossRatio', label: '车险赔付率', type: 'percent', unit: '%', min: 0, max: 200, warningHigh: 110, dangerHigh: 130, defaultValue: 104.2, category: 'variable-car', product: '车险', conversionLabel: '车险赔付率' },
     { id: 'carHandlingFeeRate', label: '车险手续费率', type: 'percent', unit: '%', min: 0, max: 50, warningHigh: 20, dangerHigh: 35, defaultValue: 0, category: 'variable-car', product: '车险', conversionLabel: '车险手续费率' },
     { id: 'carSalesPromotionRate', label: '车险销推费用率', type: 'percent', unit: '%', min: 0, max: 30, warningHigh: 10, dangerHigh: 20, defaultValue: 0.3, category: 'variable-car', product: '车险', conversionLabel: '车险销推费用率' },

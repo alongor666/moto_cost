@@ -34,16 +34,6 @@ export function updateStatus(DOMElements, fieldId, result) {
     if (result.status === 'warning') input.classList.add('is-warning');
     if (result.status === 'error') input.classList.add('is-error');
     input.title = result.message || '';
-
-    const chip = DOMElements.statusChips ? DOMElements.statusChips[fieldId] : null;
-    if (chip) {
-        chip.className = 'status-chip';
-        chip.textContent = result.message;
-        if (result.status === 'success') chip.classList.add('status-chip--success');
-        if (result.status === 'warning') chip.classList.add('status-chip--warning');
-        if (result.status === 'error') chip.classList.add('status-chip--error');
-        chip.title = `${VALIDATION_RULES[fieldId]?.label || '参数'}：${result.message}`;
-    }
 }
 
 export const validateField = (DOMElements, fieldId) => {
@@ -65,111 +55,27 @@ export function applySchemaDefaults(DOMElements) {
             if (!isNaN(param.min)) input.setAttribute('min', param.min);
             if (!isNaN(param.max)) input.setAttribute('max', param.max);
             input.dataset.default = param.defaultValue;
+            // Only set value if empty, otherwise keep current (though usually this is called on init)
             if (!input.value) input.value = param.defaultValue;
-            if (!input.placeholder) {
-                const hasRange = !isNaN(param.min) && !isNaN(param.max);
-                const rangeText = hasRange ? `${param.min}-${param.max}${param.unit || ''}` : `${param.unit || ''}`;
-                input.placeholder = rangeText ? `输入 ${rangeText}` : input.placeholder;
-            }
-        }
-
-        const defaultValueEl = input?.closest('.param-row')?.querySelector('.default-value');
-        if (defaultValueEl) {
-            defaultValueEl.dataset.default = param.defaultValue;
-            defaultValueEl.textContent = param.defaultValue;
         }
     });
 }
 
-export function setupDefaultFillers(DOMElements) {
-    $$('.fill-default-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const target = btn.dataset.target;
-            const input = DOMElements.inputs[target];
-            const defaultValue = PARAMETER_MAP[target]?.defaultValue
-                ?? btn.closest('.default-cell')?.querySelector('.default-value')?.dataset.default;
-            if (input && defaultValue !== undefined) {
+// Minimalist feature: Double click to reset to default
+export function setupDoubleTapReset(DOMElements) {
+    Object.values(DOMElements.inputs).forEach(input => {
+        input.addEventListener('dblclick', () => {
+            const defaultValue = input.dataset.default;
+            if (defaultValue !== undefined) {
                 input.value = defaultValue;
                 input.dispatchEvent(new Event('input', { bubbles: true }));
+                
+                // Visual feedback for reset - flash valid style
+                input.classList.add('is-valid');
+                setTimeout(() => input.classList.remove('is-valid'), 500);
             }
         });
     });
-}
-
-export function setupSteppers(DOMElements) {
-    $$('.stepper').forEach(stepper => {
-        const targetId = stepper.dataset.target;
-        const setActiveStep = (step) => { stepper.dataset.step = step; };
-        const stepButtons = stepper.querySelectorAll('.stepper__step');
-        stepButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                stepButtons.forEach(b => b.classList.remove('is-active'));
-                btn.classList.add('is-active');
-                setActiveStep(btn.dataset.step);
-            });
-        });
-        if (!stepper.dataset.step && stepButtons[0]) setActiveStep(stepButtons[0].dataset.step);
-
-        stepper.querySelectorAll('.stepper__btn').forEach(actionBtn => {
-            actionBtn.addEventListener('click', () => {
-                const input = DOMElements.inputs[targetId];
-                if (!input) return;
-                const step = parseFloat(stepper.dataset.step) || 1;
-                const direction = parseInt(actionBtn.dataset.direction, 10) || 0;
-                const next = (parseFloat(input.value) || 0) + step * direction;
-                const min = parseFloat(input.dataset.min);
-                const max = parseFloat(input.dataset.max);
-                input.value = clampValue(next, min, max);
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-            });
-        });
-    });
-}
-
-export function initParameterCardsCollapse(DOMElements) {
-    const cards = $$('.param-card');
-    const toggleAllBtn = DOMElements.toggleAllCardsBtn;
-
-    const setCardState = (card, collapsed) => {
-        const body = card.querySelector('.param-card__body');
-        const toggle = card.querySelector('.param-card__toggle');
-        card.classList.toggle('is-collapsed', collapsed);
-        if (body) body.hidden = collapsed;
-        if (toggle) toggle.setAttribute('aria-expanded', (!collapsed).toString());
-    };
-
-    const updateToggleAllLabel = () => {
-        if (!toggleAllBtn) return;
-        const hasCollapsed = Array.from(cards).some(card => card.classList.contains('is-collapsed'));
-        toggleAllBtn.textContent = hasCollapsed ? '全部展开' : '全部收起';
-        toggleAllBtn.setAttribute('aria-pressed', (!hasCollapsed).toString());
-    };
-
-    cards.forEach(card => {
-        const toggle = card.querySelector('.param-card__toggle');
-        const handleToggle = (event) => {
-            if (event.type === 'keydown' && !['Enter', ' '].includes(event.key)) return;
-            if (event.type === 'keydown') event.preventDefault();
-            const isCollapsed = card.classList.contains('is-collapsed');
-            setCardState(card, !isCollapsed);
-            updateToggleAllLabel();
-        };
-
-        setCardState(card, card.classList.contains('is-collapsed'));
-        if (toggle) {
-            toggle.addEventListener('click', handleToggle);
-            toggle.addEventListener('keydown', handleToggle);
-        }
-    });
-
-    if (toggleAllBtn) {
-        toggleAllBtn.addEventListener('click', () => {
-            const shouldExpand = Array.from(cards).some(card => card.classList.contains('is-collapsed'));
-            cards.forEach(card => setCardState(card, !shouldExpand));
-            updateToggleAllLabel();
-        });
-        updateToggleAllLabel();
-    }
 }
 
 export function setupInputAutoFocus() {
@@ -191,6 +97,10 @@ export function setupInputAutoFocus() {
     });
 }
 
+/**
+ * 更新摩意险保费配比显示
+ * 计算公式：(摩意险件均保费 × 摩意险份数) ÷ 摩托车单均保费
+ */
 export function updateMotoPremiumRatioDisplay(DOMElements) {
     if (!DOMElements.motoPremiumRatioDisplay) return;
 
@@ -200,37 +110,53 @@ export function updateMotoPremiumRatioDisplay(DOMElements) {
 
     if (carAveragePremium > 0) {
         const motoPremiumRatio = (motoAveragePremium * motoQuantity) / carAveragePremium;
-        DOMElements.motoPremiumRatioDisplay.textContent = `${(motoPremiumRatio * 100).toFixed(2)}%`;
+        DOMElements.motoPremiumRatioDisplay.value = motoPremiumRatio.toFixed(2);
     } else {
-        DOMElements.motoPremiumRatioDisplay.textContent = '--';
+        DOMElements.motoPremiumRatioDisplay.value = '0.00';
     }
 }
 
-export function updateConversionHints(DOMElements) {
-    Object.keys(DOMElements.inputs).forEach(key => {
-        const value = parseFloat(DOMElements.inputs[key].value);
-        const hintEl = document.querySelector(`#${key}Conversion`);
-        if (!hintEl) return;
-        if (isNaN(value)) { hintEl.textContent = ''; return; }
+/**
+ * 更新摩意险手续费率显示
+ * 计算公式：(随车业务费用率 + 卡单费用率) ÷ 2
+ */
+export function updateMotoHandlingFeeRateDisplay(DOMElements) {
+    if (!DOMElements.motoHandlingFeeRateDisplay) return;
 
-        if (CONVERSION_LABELS[key]) {
-            const param = PARAMETER_MAP[key];
-            const factor = param?.type === 'percent' ? value / 100 : value;
-            hintEl.textContent = `= ${factor.toFixed(2)}x ${CONVERSION_LABELS[key]}`;
+    const motoWithCarFeeRate = getInputValue(DOMElements, 'motoWithCarFeeRate');
+    const motoCardFeeRate = getInputValue(DOMElements, 'motoCardFeeRate');
+
+    const motoHandlingFeeRate = (motoWithCarFeeRate + motoCardFeeRate) / 2;
+    DOMElements.motoHandlingFeeRateDisplay.value = motoHandlingFeeRate.toFixed(1);
+}
+
+export function setupMotoPremiumLink(DOMElements) {
+    const { inputs } = DOMElements;
+    const updateMotoPremium = () => {
+        const carPremium = parseFloat(inputs.carPremium.value) || 0;
+        const carAveragePremium = parseFloat(inputs.carAveragePremium.value) || 120;
+        const motoAveragePremium = parseFloat(inputs.motoAveragePremium.value) || 100;
+        const motoQuantity = parseFloat(inputs.motoQuantity.value) || 2;
+        
+        if (carAveragePremium > 0) {
+            const ratio = (motoAveragePremium * motoQuantity) / carAveragePremium;
+            const motoPremium = carPremium * ratio;
+            if (inputs.motoPremium) {
+                inputs.motoPremium.value = Math.round(motoPremium);
+                inputs.motoPremium.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
+    };
+
+    ['carPremium', 'carAveragePremium', 'motoAveragePremium', 'motoQuantity'].forEach(id => {
+        if (inputs[id]) {
+            inputs[id].addEventListener('input', updateMotoPremium);
         }
     });
+}
 
-    const carAvg = getInputValue(DOMElements, 'carAveragePremium');
-    const motoAvg = getInputValue(DOMElements, 'motoAveragePremium');
-    const qty = getInputValue(DOMElements, 'motoQuantity');
-    const ratio = carAvg > 0 ? (motoAvg * qty) / carAvg : 0;
-    const ratioText = carAvg > 0 ? `= ${ratio.toFixed(2)}x 保费配比` : '';
-    ['carAveragePremiumConversion', 'motoAveragePremiumConversion', 'motoQuantityConversion'].forEach(id => {
-        const el = document.querySelector(`#${id}`);
-        if (el) el.textContent = ratioText;
-    });
-    const motoPremiumRatioEl = document.querySelector('#motoPremiumRatioConversion');
-    if (motoPremiumRatioEl) motoPremiumRatioEl.textContent = ratioText;
+export function updateConversionHints(DOMElements) {
+    // Hints are removed
 }
 
 export function storeCurrentInputValues(DOMElements) {
@@ -242,17 +168,16 @@ export function storeCurrentInputValues(DOMElements) {
 export function highlightChangedParameters(DOMElements, previousValues) {
     for (const key in DOMElements.inputs) {
         const inputElement = DOMElements.inputs[key];
-        inputElement.classList.remove('form-field__input--highlight');
+        // Minimal implementation: just ensure we don't crash. 
+        // Visual feedback is handled by validation state mostly.
         if (inputElement.value !== previousValues[key]) {
-            inputElement.classList.add('form-field__input--highlight');
-            inputElement.addEventListener('animationend', () => inputElement.classList.remove('form-field__input--highlight'), { once: true });
+             // Optional: Add a subtle flash if needed, but keeping it clean for now.
         }
     }
 }
 
 export function setupInputBehaviors(DOMElements) {
-    initParameterCardsCollapse(DOMElements);
     setupInputAutoFocus();
-    setupDefaultFillers(DOMElements);
-    setupSteppers(DOMElements);
+    setupDoubleTapReset(DOMElements);
+    setupMotoPremiumLink(DOMElements);
 }

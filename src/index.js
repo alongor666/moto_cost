@@ -9,6 +9,7 @@ import {
     validateField,
     updateConversionHints,
     updateMotoPremiumRatioDisplay,
+    updateMotoHandlingFeeRateDisplay,
     storeCurrentInputValues,
     highlightChangedParameters
 } from './ui/parametersForm.js';
@@ -257,6 +258,7 @@ function updateUI(DOMElements) {
     updateContextInsight(DOMElements, calculatedData, breakEvenData, inputs);
     updateThemeLabelSafe(DOMElements);
     updateMotoPremiumRatioDisplay(DOMElements);
+    updateMotoHandlingFeeRateDisplay(DOMElements);
     updateConversionHints(DOMElements);
 }
 

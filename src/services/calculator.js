@@ -4,6 +4,7 @@ import { getInputValue, getInputValueAsRate } from '../ui/parametersForm.js';
 export function getCalculationInputs(DOMElements) {
     return {
         carPremium: getInputValue(DOMElements, 'carPremium'),
+        motoPremium: getInputValue(DOMElements, 'motoPremium'),
         carLossRatio: getInputValueAsRate(DOMElements, 'carLossRatio'),
         carHandlingFeeRate: getInputValueAsRate(DOMElements, 'carHandlingFeeRate'),
         carSalesPromotionRate: getInputValueAsRate(DOMElements, 'carSalesPromotionRate'),
@@ -22,9 +23,9 @@ export function getCalculationInputs(DOMElements) {
 }
 
 export function calculateBreakEvenAnalysis(inputs) {
-    const { carPremium, carLossRatio, carHandlingFeeRate, carSalesPromotionRate, carStandardPremiumRatio, carAveragePremium, motoAveragePremium, motoQuantity, motoLossRatio, motoWithCarFeeRate, motoCardFeeRate, motoSalesPromotionRate, motoStandardPremiumRatio, laborBaseRate, fixedOperationRate } = inputs;
+    const { carPremium, motoPremium, carLossRatio, carHandlingFeeRate, carSalesPromotionRate, carStandardPremiumRatio, carAveragePremium, motoAveragePremium, motoQuantity, motoLossRatio, motoWithCarFeeRate, motoCardFeeRate, motoSalesPromotionRate, motoStandardPremiumRatio, laborBaseRate, fixedOperationRate } = inputs;
 
-    const motoPremiumRatio = carAveragePremium > 0 ? (motoAveragePremium * motoQuantity) / carAveragePremium : 0;
+    const motoPremiumRatio = carPremium > 0 ? motoPremium / carPremium : 0;
     const motoHandlingFeeRate = (motoWithCarFeeRate + motoCardFeeRate) / 2;
 
     const carFixedCosts = carHandlingFeeRate + carSalesPromotionRate + (carStandardPremiumRatio * laborBaseRate);
@@ -49,8 +50,8 @@ export function calculateBreakEvenAnalysis(inputs) {
 }
 
 export function performCalculations(inputs) {
-    const { carPremium, carLossRatio, carHandlingFeeRate, carSalesPromotionRate, carStandardPremiumRatio, carAveragePremium, motoAveragePremium, motoQuantity, motoLossRatio, motoWithCarFeeRate, motoCardFeeRate, motoSalesPromotionRate, motoStandardPremiumRatio, laborBaseRate, fixedOperationRate } = inputs;
-    const motoPremiumRatio = carAveragePremium > 0 ? (motoAveragePremium * motoQuantity) / carAveragePremium : 0;
+    const { carPremium, motoPremium, carLossRatio, carHandlingFeeRate, carSalesPromotionRate, carStandardPremiumRatio, carAveragePremium, motoAveragePremium, motoQuantity, motoLossRatio, motoWithCarFeeRate, motoCardFeeRate, motoSalesPromotionRate, motoStandardPremiumRatio, laborBaseRate, fixedOperationRate } = inputs;
+    const motoPremiumRatio = carPremium > 0 ? motoPremium / carPremium : 0;
     const motoHandlingFeeRate = (motoWithCarFeeRate + motoCardFeeRate) / 2;
     const carLaborCostRate = carStandardPremiumRatio * laborBaseRate;
     const carVariableCostRate = carLossRatio + carHandlingFeeRate + carSalesPromotionRate + carLaborCostRate;
@@ -60,9 +61,10 @@ export function performCalculations(inputs) {
     const carHandlingFee = carPremium * carHandlingFeeRate;
     const carSalesPromotion = carPremium * carSalesPromotionRate;
     const carLaborCost = carPremium * carLaborCostRate;
+    const carFixedCost = carPremium * fixedOperationRate;
     const carEdgeContribution = carPremium * carEdgeContributionRate;
     const carProfit = carPremium * (1 - carTotalCostRate);
-    const motoPremium = carPremium * motoPremiumRatio;
+    // const motoPremium = carPremium * motoPremiumRatio; // Removed as it is now an input
     const motoLaborCostRate = motoStandardPremiumRatio * laborBaseRate;
     const motoVariableCostRate = motoLossRatio + motoHandlingFeeRate + motoSalesPromotionRate + motoLaborCostRate;
     const motoTotalCostRate = motoVariableCostRate + fixedOperationRate;
@@ -71,6 +73,7 @@ export function performCalculations(inputs) {
     const motoHandlingFee = motoPremium * motoHandlingFeeRate;
     const motoSalesPromotion = motoPremium * motoSalesPromotionRate;
     const motoLaborCost = motoPremium * motoLaborCostRate;
+    const motoFixedCost = motoPremium * fixedOperationRate;
     const motoEdgeContribution = motoPremium * motoEdgeContributionRate;
     const motoProfit = motoPremium * (1 - motoTotalCostRate);
     const totalPremium = carPremium + motoPremium;
@@ -78,6 +81,7 @@ export function performCalculations(inputs) {
     const totalHandlingFee = carHandlingFee + motoHandlingFee;
     const totalSalesPromotion = carSalesPromotion + motoSalesPromotion;
     const totalLaborCost = carLaborCost + motoLaborCost;
+    const totalFixedCost = carFixedCost + motoFixedCost;
     const totalVariableCost = totalLoss + totalHandlingFee + totalSalesPromotion + totalLaborCost;
     const totalVariableCostRate = totalPremium > 0 ? totalVariableCost / totalPremium : 0;
     const totalCostRate = totalVariableCostRate + fixedOperationRate;
@@ -85,9 +89,9 @@ export function performCalculations(inputs) {
     const totalProfit = carProfit + motoProfit;
     const totalEdgeContributionRate = 1 - totalVariableCostRate;
     return {
-        car: { absolute: [carPremium, carLoss, carHandlingFee, carSalesPromotion, carLaborCost, carEdgeContribution, carProfit], rate: [carTotalCostRate, carVariableCostRate, carLossRatio, carHandlingFeeRate, carSalesPromotionRate, carLaborCostRate, carEdgeContributionRate] },
-        moto: { absolute: [motoPremium, motoLoss, motoHandlingFee, motoSalesPromotion, motoLaborCost, motoEdgeContribution, motoProfit], rate: [motoTotalCostRate, motoVariableCostRate, motoLossRatio, motoHandlingFeeRate, motoSalesPromotionRate, motoLaborCostRate, motoEdgeContributionRate] },
-        combined: { absolute: [totalPremium, totalLoss, totalHandlingFee, totalSalesPromotion, totalLaborCost, totalEdgeContribution, totalProfit], rate: [totalCostRate, totalVariableCostRate, totalPremium > 0 ? totalLoss/totalPremium : 0, totalPremium > 0 ? totalHandlingFee/totalPremium : 0, totalPremium > 0 ? totalSalesPromotion/totalPremium : 0, totalPremium > 0 ? totalLaborCost/totalPremium : 0, totalEdgeContributionRate] }
+        car: { absolute: [carPremium, carLoss, carHandlingFee, carSalesPromotion, carLaborCost, carFixedCost, carProfit], rate: [carTotalCostRate, carLossRatio, carHandlingFeeRate, carSalesPromotionRate, carLaborCostRate, fixedOperationRate] },
+        moto: { absolute: [motoPremium, motoLoss, motoHandlingFee, motoSalesPromotion, motoLaborCost, motoFixedCost, motoProfit], rate: [motoTotalCostRate, motoLossRatio, motoHandlingFeeRate, motoSalesPromotionRate, motoLaborCostRate, fixedOperationRate] },
+        combined: { absolute: [totalPremium, totalLoss, totalHandlingFee, totalSalesPromotion, totalLaborCost, totalFixedCost, totalProfit], rate: [totalCostRate, totalPremium > 0 ? totalLoss/totalPremium : 0, totalPremium > 0 ? totalHandlingFee/totalPremium : 0, totalPremium > 0 ? totalSalesPromotion/totalPremium : 0, totalPremium > 0 ? totalLaborCost/totalPremium : 0, fixedOperationRate] }
     };
 }
 

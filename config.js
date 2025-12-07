@@ -10,6 +10,7 @@ export const APP_CONFIG = {
         HANDLING_FEE: { label: '手续费', colorKey: 'neutral', isRate: false },
         SALES_PROMOTION: { label: '销推费用', colorKey: 'neutral', isRate: false },
         LABOR_COST: { label: '人力成本', colorKey: 'neutral', isRate: false },
+        FIXED_COST: { label: '固定成本', colorKey: 'neutral', isRate: false },
         EDGE_CONTRIBUTION: { label: '边际贡献额', colorKey: 'conditional', isRate: false, positiveGood: true },
         PROFIT: { label: '利润', colorKey: 'conditional', isRate: false, positiveGood: true },
         TCR: { label: '综合成本率', colorKey: 'conditional', isRate: true, threshold: 1, higherIsWorse: true },
@@ -18,20 +19,22 @@ export const APP_CONFIG = {
         HANDLING_FEE_RATIO: { label: '手续费率', colorKey: 'neutral', isRate: true },
         SALES_PROMOTION_RATIO: { label: '销推费用率', colorKey: 'neutral', isRate: true },
         LABOR_COST_RATIO: { label: '人力成本率', colorKey: 'neutral', isRate: true },
+        FIXED_COST_RATIO: { label: '固定成本率', colorKey: 'neutral', isRate: true },
         EDGE_CONTRIBUTION_RATIO: { label: '边际贡献率', colorKey: 'conditional', isRate: true, positiveGood: true }
     },
-    ABSOLUTE_CHART_INDICATORS: ['PREMIUM', 'LOSS', 'HANDLING_FEE', 'SALES_PROMOTION', 'LABOR_COST', 'EDGE_CONTRIBUTION', 'PROFIT'],
-    RATE_CHART_INDICATORS: ['TCR', 'VCR', 'LOSS_RATIO', 'HANDLING_FEE_RATIO', 'SALES_PROMOTION_RATIO', 'LABOR_COST_RATIO', 'EDGE_CONTRIBUTION_RATIO'],
+    ABSOLUTE_CHART_INDICATORS: ['PREMIUM', 'LOSS', 'HANDLING_FEE', 'SALES_PROMOTION', 'LABOR_COST', 'FIXED_COST', 'PROFIT'],
+    RATE_CHART_INDICATORS: ['TCR', 'LOSS_RATIO', 'HANDLING_FEE_RATIO', 'SALES_PROMOTION_RATIO', 'LABOR_COST_RATIO', 'FIXED_COST_RATIO'],
     SCHEMES: {
-        '90.8': { name: '方案A (盈利)', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1000, carLossRatio: 90.8, carHandlingFeeRate: 0, carSalesPromotionRate: 0.3, carStandardPremiumRatio: 0.5, carAveragePremium: 120, motoAveragePremium: 100, motoQuantity: 2, motoLossRatio: 4, motoWithCarFeeRate: 65, motoCardFeeRate: 85, motoSalesPromotionRate: 0.9, motoStandardPremiumRatio: 1.8 }},
-        '104.2': { name: '方案B (平衡)', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1000, carLossRatio: 104.2, carHandlingFeeRate: 0, carSalesPromotionRate: 0.3, carStandardPremiumRatio: 0.5, carAveragePremium: 120, motoAveragePremium: 100, motoQuantity: 2, motoLossRatio: 4, motoWithCarFeeRate: 65, motoCardFeeRate: 85, motoSalesPromotionRate: 0.9, motoStandardPremiumRatio: 1.8 }},
-        '117.5': { name: '方案C (微亏)', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1000, carLossRatio: 117.5, carHandlingFeeRate: 0, carSalesPromotionRate: 0.3, carStandardPremiumRatio: 0.5, carAveragePremium: 120, motoAveragePremium: 100, motoQuantity: 2, motoLossRatio: 4, motoWithCarFeeRate: 65, motoCardFeeRate: 85, motoSalesPromotionRate: 0.9, motoStandardPremiumRatio: 1.8 }},
-        '130.8': { name: '方案D (巨亏)', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1000, carLossRatio: 130.8, carHandlingFeeRate: 0, carSalesPromotionRate: 0.3, carStandardPremiumRatio: 0.5, carAveragePremium: 120, motoAveragePremium: 100, motoQuantity: 2, motoLossRatio: 4, motoWithCarFeeRate: 65, motoCardFeeRate: 85, motoSalesPromotionRate: 0.9, motoStandardPremiumRatio: 1.8 }}
+        '90.8': { name: '方案A (盈利)', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1000, motoPremium: 1667, carLossRatio: 90.8, carHandlingFeeRate: 0, carSalesPromotionRate: 0.3, carStandardPremiumRatio: 0.5, carAveragePremium: 120, motoAveragePremium: 100, motoQuantity: 2, motoLossRatio: 4, motoWithCarFeeRate: 65, motoCardFeeRate: 85, motoSalesPromotionRate: 0.9, motoStandardPremiumRatio: 1.8 }},
+        '104.2': { name: '方案B (平衡)', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1000, motoPremium: 1667, carLossRatio: 104.2, carHandlingFeeRate: 0, carSalesPromotionRate: 0.3, carStandardPremiumRatio: 0.5, carAveragePremium: 120, motoAveragePremium: 100, motoQuantity: 2, motoLossRatio: 4, motoWithCarFeeRate: 65, motoCardFeeRate: 85, motoSalesPromotionRate: 0.9, motoStandardPremiumRatio: 1.8 }},
+        '117.5': { name: '方案C (微亏)', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1000, motoPremium: 1667, carLossRatio: 117.5, carHandlingFeeRate: 0, carSalesPromotionRate: 0.3, carStandardPremiumRatio: 0.5, carAveragePremium: 120, motoAveragePremium: 100, motoQuantity: 2, motoLossRatio: 4, motoWithCarFeeRate: 65, motoCardFeeRate: 85, motoSalesPromotionRate: 0.9, motoStandardPremiumRatio: 1.8 }},
+        '130.8': { name: '方案D (巨亏)', params: { laborBaseRate: 2.8, fixedOperationRate: 7.21, carPremium: 1000, motoPremium: 1667, carLossRatio: 130.8, carHandlingFeeRate: 0, carSalesPromotionRate: 0.3, carStandardPremiumRatio: 0.5, carAveragePremium: 120, motoAveragePremium: 100, motoQuantity: 2, motoLossRatio: 4, motoWithCarFeeRate: 65, motoCardFeeRate: 85, motoSalesPromotionRate: 0.9, motoStandardPremiumRatio: 1.8 }}
     },
     INPUT_SELECTORS: {
         laborBaseRate: '#laborBaseRate',
         fixedOperationRate: '#fixedOperationRate',
         carPremium: '#carPremium',
+        motoPremium: '#motoPremium',
         carLossRatio: '#carLossRatio',
         carHandlingFeeRate: '#carHandlingFeeRate',
         carSalesPromotionRate: '#carSalesPromotionRate',
@@ -43,7 +46,9 @@ export const APP_CONFIG = {
         motoWithCarFeeRate: '#motoWithCarFeeRate',
         motoCardFeeRate: '#motoCardFeeRate',
         motoSalesPromotionRate: '#motoSalesPromotionRate',
-        motoStandardPremiumRatio: '#motoStandardPremiumRatio'
+        motoStandardPremiumRatio: '#motoStandardPremiumRatio',
+        motoPremiumRatioDisplay: '#motoPremiumRatioDisplay',
+        motoHandlingFeeRateDisplay: '#motoHandlingFeeRateDisplay'
     },
     CHART_SELECTORS: {
         combinedAbsolute: '#combinedAbsoluteChart',

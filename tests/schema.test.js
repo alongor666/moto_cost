@@ -10,7 +10,8 @@ assert.deepStrictEqual(Object.keys(VALIDATION_RULES).sort(), schemaIds, '校验�
 const conversionIdsFromSchema = PARAMETER_SCHEMA.filter(param => param.conversionLabel).map(param => param.id).sort();
 assert.deepStrictEqual(Object.keys(CONVERSION_LABELS).sort(), conversionIdsFromSchema, '转换标签应来自 schema');
 
-assert.deepStrictEqual(Object.keys(APP_CONFIG.INPUT_SELECTORS).sort(), schemaIds, '表单选择器需要与 schema 参数保持一致');
+const inputSelectorsKeys = Object.keys(APP_CONFIG.INPUT_SELECTORS).filter(k => !['motoPremiumRatioDisplay', 'motoHandlingFeeRateDisplay'].includes(k)).sort();
+assert.deepStrictEqual(inputSelectorsKeys, schemaIds, '表单选择器需要与 schema 参数保持一致');
 
 PARAMETER_SCHEMA.forEach(param => {
     assert.strictEqual(PARAMETER_MAP[param.id], param, `参数 ${param.id} 应映射到自身配置`);
