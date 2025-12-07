@@ -268,16 +268,16 @@
         /* 参数表格 */
         .params-table {
             width: 100%;
-            border-collapse: collapse;
-            font-size: var(--font-size-sm);
+            border-collapse: separate;
             border-spacing: 0 var(--spacing-xs);
+            font-size: var(--font-size-sm);
         }
         .param-actions__hint {
             color: var(--color-text-tertiary);
             font-size: var(--font-size-sm);
         }
         .params-table th {
-            padding: var(--spacing-sm) var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
             text-align: left;
             font-weight: var(--font-weight-semibold);
             color: var(--color-text-secondary);
@@ -285,25 +285,41 @@
             font-size: calc(var(--font-size-sm) - 1px);
         }
         .params-table td {
-            padding: var(--spacing-sm) var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
             border-bottom: 1px solid var(--color-divider);
+            background: var(--color-background-content);
         }
 
+        .params-table tbody tr {
+            box-shadow: var(--shadow-subtle);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .params-table tbody tr td:first-child { border-radius: var(--border-radius) 0 0 var(--border-radius); }
+        .params-table tbody tr td:last-child { border-radius: 0 var(--border-radius) var(--border-radius) 0; }
+
         /* 列宽度控制 */
-        .col-category { width: 15%; }
-        .col-product { width: 12%; }
-        .col-parameter { width: 30%; }
+        .col-category { width: 18%; }
+        .col-product { width: 14%; }
+        .col-parameter { width: 28%; }
         .col-default { width: 12%; text-align: right; }
-        .col-current { width: 28%; }
+        .col-current { width: 26%; }
         .col-unit { width: 8%; }
         .col-status { width: 12%; }
 
-        /* 分类行样式 */
-        .category-row {
-            background: var(--color-background-content);
-            cursor: pointer;
-            position: relative;
+        /* 组标题行样式 */
+        .group-row { box-shadow: none; }
+        .group-row .group-cell {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: linear-gradient(90deg, hsla(var(--hue-accent), 90%, 55%, 0.08), hsla(var(--hue-accent), 70%, 50%, 0.04));
+            color: var(--color-text-primary);
+            font-weight: var(--font-weight-semibold);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            letter-spacing: 0.5px;
         }
+
         .param-card__header::after {
             content: '';
             position: absolute;
@@ -423,11 +439,6 @@
         .status-chip--success { background: rgba(50, 215, 75, 0.1); color: var(--color-positive); border: 1px solid rgba(50, 215, 75, 0.4); }
         .status-chip--warning { background: rgba(255, 204, 0, 0.1); color: var(--color-warning); border: 1px solid rgba(255, 204, 0, 0.4); }
         .status-chip--error { background: rgba(255, 69, 58, 0.08); color: var(--color-negative); border: 1px solid rgba(255, 69, 58, 0.45); }
-
-        /* 隐藏/显示参数行 */
-        .param-row.hidden {
-            display: none;
-        }
 
         /* 默认值列样式 */
         .col-default {
