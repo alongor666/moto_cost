@@ -105,160 +105,190 @@
             </button>
         </header>
         <div class="parameters-drawer__content">
-            <!-- 摩意险保费配比实时显示 -->
-            <div class="param-summary-section">
-                <div class="param-summary-label">摩意险保费配比</div>
-                <div class="param-summary-value" id="motoPremiumRatioDisplay">--</div>
+            <div class="parameters-layout">
+                <div class="parameters-drawer__aside">
+                    <div class="param-summary-section">
+                        <div class="param-summary-label">摩意险保费配比</div>
+                        <div class="param-summary-value" id="motoPremiumRatioDisplay">--</div>
+                    </div>
+                    <div class="category-card" data-category="management">
+                        <div class="category-card__label">管理成本</div>
+                        <p class="category-card__desc">人力与固定运营成本，适用于全部业务。</p>
+                    </div>
+                    <div class="category-card" data-category="variable-car">
+                        <div class="category-card__label">车险变动成本</div>
+                        <p class="category-card__desc">赔付率、费用率及标保系数等车险关键参数。</p>
+                    </div>
+                    <div class="category-card" data-category="variable-moto">
+                        <div class="category-card__label">摩意险变动成本</div>
+                        <p class="category-card__desc">件均、份数、赔付率及费用率配置。</p>
+                    </div>
+                </div>
+                <div class="parameters-drawer__main">
+                    <table class="params-table">
+                        <thead>
+                            <tr>
+                                <th class="col-category">成本类型</th>
+                                <th class="col-product">产品类型</th>
+                                <th class="col-parameter">参数名称</th>
+                                <th class="col-default">默认值</th>
+                                <th class="col-current">当前值</th>
+                                <th class="col-unit">单位</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 管理成本 -->
+                            <tr class="category-row collapsible collapsed" data-category="management">
+                                <td class="col-category" rowspan="2">
+                                    <span class="collapse-icon">▶</span>
+                                    管理成本
+                                </td>
+                                <td colspan="5"></td>
+                            </tr>
+                            <tr class="param-row management-cost hidden" data-category="management">
+                                <td class="col-product">通用</td>
+                                <td class="col-parameter">人力成本基数</td>
+                                <td class="col-default">2.8</td>
+                                <td class="col-current"><input type="number" id="laborBaseRate" class="param-input" value="2.8" step="0.1" data-next="fixedOperationRate"></td>
+                                <td class="col-unit">%</td>
+                            </tr>
+                            <tr class="param-row management-cost hidden" data-category="management">
+                                <td class="col-product">通用</td>
+                                <td class="col-parameter">固定运营成本率</td>
+                                <td class="col-default">7.21</td>
+                                <td class="col-current"><input type="number" id="fixedOperationRate" class="param-input" value="7.21" step="0.01" data-next="carPremium"></td>
+                                <td class="col-unit">%</td>
+                            </tr>
+
+                            <!-- 变动成本 - 车险 -->
+                            <tr class="category-row collapsible collapsed" data-category="variable-car">
+                                <td class="col-category" rowspan="6">
+                                    <span class="collapse-icon">▶</span>
+                                    变动成本
+                                </td>
+                                <td class="col-product" colspan="5">
+                                    <span class="product-icon">▶</span>
+                                    车险
+                                </td>
+                            </tr>
+                            <tr class="param-row variable-car-cost hidden" data-category="variable-car">
+                                <td class="col-product">车险</td>
+                                <td class="col-parameter">车险保费</td>
+                                <td class="col-default">1000</td>
+                                <td class="col-current"><input type="number" id="carPremium" class="param-input" value="1000" step="100" data-next="carLossRatio"></td>
+                                <td class="col-unit">万元</td>
+                            </tr>
+                            <tr class="param-row variable-car-cost hidden" data-category="variable-car">
+                                <td class="col-product">车险</td>
+                                <td class="col-parameter">赔付率</td>
+                                <td class="col-default">104.2</td>
+                                <td class="col-current"><input type="number" id="carLossRatio" class="param-input" value="104.2" step="0.1" data-next="carHandlingFeeRate"></td>
+                                <td class="col-unit">%</td>
+                            </tr>
+                            <tr class="param-row variable-car-cost hidden" data-category="variable-car">
+                                <td class="col-product">车险</td>
+                                <td class="col-parameter">手续费率</td>
+                                <td class="col-default">0</td>
+                                <td class="col-current"><input type="number" id="carHandlingFeeRate" class="param-input" value="0" step="0.1" data-next="carSalesPromotionRate"></td>
+                                <td class="col-unit">%</td>
+                            </tr>
+                            <tr class="param-row variable-car-cost hidden" data-category="variable-car">
+                                <td class="col-product">车险</td>
+                                <td class="col-parameter">销推费用率</td>
+                                <td class="col-default">0.3</td>
+                                <td class="col-current"><input type="number" id="carSalesPromotionRate" class="param-input" value="0.3" step="0.1" data-next="carStandardPremiumRatio"></td>
+                                <td class="col-unit">%</td>
+                            </tr>
+                            <tr class="param-row variable-car-cost hidden" data-category="variable-car">
+                                <td class="col-product">车险</td>
+                                <td class="col-parameter">标保系数</td>
+                                <td class="col-default">0.5</td>
+                                <td class="col-current"><input type="number" id="carStandardPremiumRatio" class="param-input" value="0.5" step="0.1" data-next="carAveragePremium"></td>
+                                <td class="col-unit">-</td>
+                            </tr>
+
+                            <!-- 变动成本 - 摩意险 -->
+                            <tr class="category-row collapsible collapsed" data-category="variable-moto">
+                                <td class="col-product" colspan="5">
+                                    <span class="product-icon">▶</span>
+                                    摩意险
+                                </td>
+                            </tr>
+                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                                <td class="col-product">摩意险</td>
+                                <td class="col-parameter">摩托车车险单均保费</td>
+                                <td class="col-default">120</td>
+                                <td class="col-current"><input type="number" id="carAveragePremium" class="param-input" value="120" step="1" data-next="motoAveragePremium"></td>
+                                <td class="col-unit">元</td>
+                            </tr>
+                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                                <td class="col-product">摩意险</td>
+                                <td class="col-parameter">摩意险件均保费</td>
+                                <td class="col-default">100</td>
+                                <td class="col-current"><input type="number" id="motoAveragePremium" class="param-input" value="100" step="1" data-next="motoQuantity"></td>
+                                <td class="col-unit">元</td>
+                            </tr>
+                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                                <td class="col-product">摩意险</td>
+                                <td class="col-parameter">摩意险份数</td>
+                                <td class="col-default">2</td>
+                                <td class="col-current"><input type="number" id="motoQuantity" class="param-input" value="2" step="0.01" data-next="motoLossRatio"></td>
+                                <td class="col-unit">份</td>
+                            </tr>
+                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                                <td class="col-product">摩意险</td>
+                                <td class="col-parameter">赔付率</td>
+                                <td class="col-default">4</td>
+                                <td class="col-current"><input type="number" id="motoLossRatio" class="param-input" value="4" step="0.1" data-next="motoWithCarFeeRate"></td>
+                                <td class="col-unit">%</td>
+                            </tr>
+                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                                <td class="col-product">摩意险</td>
+                                <td class="col-parameter">摩意险随车业务费用率</td>
+                                <td class="col-default">65</td>
+                                <td class="col-current"><input type="number" id="motoWithCarFeeRate" class="param-input" value="65" step="0.1" data-next="motoCardFeeRate"></td>
+                                <td class="col-unit">%</td>
+                            </tr>
+                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                                <td class="col-product">摩意险</td>
+                                <td class="col-parameter">摩意险卡单费用率</td>
+                                <td class="col-default">85</td>
+                                <td class="col-current"><input type="number" id="motoCardFeeRate" class="param-input" value="85" step="0.1" data-next="motoSalesPromotionRate"></td>
+                                <td class="col-unit">%</td>
+                            </tr>
+                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                                <td class="col-product">摩意险</td>
+                                <td class="col-parameter">销售推动费用率</td>
+                                <td class="col-default">0.9</td>
+                                <td class="col-current"><input type="number" id="motoSalesPromotionRate" class="param-input" value="0.9" step="0.1" data-next="motoStandardPremiumRatio"></td>
+                                <td class="col-unit">%</td>
+                            </tr>
+                            <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
+                                <td class="col-product">摩意险</td>
+                                <td class="col-parameter">标保系数</td>
+                                <td class="col-default">1.8</td>
+                                <td class="col-current"><input type="number" id="motoStandardPremiumRatio" class="param-input" value="1.8" step="0.1" data-next=""></td>
+                                <td class="col-unit">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-
-            <!-- 表格化参数结构 -->
-            <table class="params-table">
-                <thead>
-                    <tr>
-                        <th class="col-category">成本类型</th>
-                        <th class="col-product">产品类型</th>
-                        <th class="col-parameter">参数名称</th>
-                        <th class="col-default">默认值</th>
-                        <th class="col-current">当前值</th>
-                        <th class="col-unit">单位</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- 管理成本 -->
-                    <tr class="category-row collapsible collapsed" data-category="management">
-                        <td class="col-category" rowspan="2">
-                            <span class="collapse-icon">▶</span>
-                            管理成本
-                        </td>
-                        <td colspan="5"></td>
-                    </tr>
-                    <tr class="param-row management-cost hidden" data-category="management">
-                        <td class="col-product">通用</td>
-                        <td class="col-parameter">人力成本基数</td>
-                        <td class="col-default">2.8</td>
-                        <td class="col-current"><input type="number" id="laborBaseRate" class="param-input" value="2.8" step="0.1" data-next="fixedOperationRate"></td>
-                        <td class="col-unit">%</td>
-                    </tr>
-                    <tr class="param-row management-cost hidden" data-category="management">
-                        <td class="col-product">通用</td>
-                        <td class="col-parameter">固定运营成本率</td>
-                        <td class="col-default">7.21</td>
-                        <td class="col-current"><input type="number" id="fixedOperationRate" class="param-input" value="7.21" step="0.01" data-next="carPremium"></td>
-                        <td class="col-unit">%</td>
-                    </tr>
-
-                    <!-- 变动成本 - 车险 -->
-                    <tr class="category-row collapsible collapsed" data-category="variable-car">
-                        <td class="col-category" rowspan="6">
-                            <span class="collapse-icon">▶</span>
-                            变动成本
-                        </td>
-                        <td class="col-product" colspan="5">
-                            <span class="product-icon">▶</span>
-                            车险
-                        </td>
-                    </tr>
-                    <tr class="param-row variable-car-cost hidden" data-category="variable-car">
-                        <td class="col-product">车险</td>
-                        <td class="col-parameter">车险保费</td>
-                        <td class="col-default">1000</td>
-                        <td class="col-current"><input type="number" id="carPremium" class="param-input" value="1000" step="100" data-next="carLossRatio"></td>
-                        <td class="col-unit">万元</td>
-                    </tr>
-                    <tr class="param-row variable-car-cost hidden" data-category="variable-car">
-                        <td class="col-product">车险</td>
-                        <td class="col-parameter">赔付率</td>
-                        <td class="col-default">104.2</td>
-                        <td class="col-current"><input type="number" id="carLossRatio" class="param-input" value="104.2" step="0.1" data-next="carHandlingFeeRate"></td>
-                        <td class="col-unit">%</td>
-                    </tr>
-                    <tr class="param-row variable-car-cost hidden" data-category="variable-car">
-                        <td class="col-product">车险</td>
-                        <td class="col-parameter">手续费率</td>
-                        <td class="col-default">0</td>
-                        <td class="col-current"><input type="number" id="carHandlingFeeRate" class="param-input" value="0" step="0.1" data-next="carSalesPromotionRate"></td>
-                        <td class="col-unit">%</td>
-                    </tr>
-                    <tr class="param-row variable-car-cost hidden" data-category="variable-car">
-                        <td class="col-product">车险</td>
-                        <td class="col-parameter">销推费用率</td>
-                        <td class="col-default">0.3</td>
-                        <td class="col-current"><input type="number" id="carSalesPromotionRate" class="param-input" value="0.3" step="0.1" data-next="carStandardPremiumRatio"></td>
-                        <td class="col-unit">%</td>
-                    </tr>
-                    <tr class="param-row variable-car-cost hidden" data-category="variable-car">
-                        <td class="col-product">车险</td>
-                        <td class="col-parameter">标保系数</td>
-                        <td class="col-default">0.5</td>
-                        <td class="col-current"><input type="number" id="carStandardPremiumRatio" class="param-input" value="0.5" step="0.1" data-next="carAveragePremium"></td>
-                        <td class="col-unit">-</td>
-                    </tr>
-
-                    <!-- 变动成本 - 摩意险 -->
-                    <tr class="category-row collapsible collapsed" data-category="variable-moto">
-                        <td class="col-product" colspan="5">
-                            <span class="product-icon">▶</span>
-                            摩意险
-                        </td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">摩托车车险单均保费</td>
-                        <td class="col-default">120</td>
-                        <td class="col-current"><input type="number" id="carAveragePremium" class="param-input" value="120" step="1" data-next="motoAveragePremium"></td>
-                        <td class="col-unit">元</td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">摩意险件均保费</td>
-                        <td class="col-default">100</td>
-                        <td class="col-current"><input type="number" id="motoAveragePremium" class="param-input" value="100" step="1" data-next="motoQuantity"></td>
-                        <td class="col-unit">元</td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">摩意险份数</td>
-                        <td class="col-default">2</td>
-                        <td class="col-current"><input type="number" id="motoQuantity" class="param-input" value="2" step="0.01" data-next="motoLossRatio"></td>
-                        <td class="col-unit">份</td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">赔付率</td>
-                        <td class="col-default">4</td>
-                        <td class="col-current"><input type="number" id="motoLossRatio" class="param-input" value="4" step="0.1" data-next="motoWithCarFeeRate"></td>
-                        <td class="col-unit">%</td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">摩意险随车业务费用率</td>
-                        <td class="col-default">65</td>
-                        <td class="col-current"><input type="number" id="motoWithCarFeeRate" class="param-input" value="65" step="0.1" data-next="motoCardFeeRate"></td>
-                        <td class="col-unit">%</td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">摩意险卡单费用率</td>
-                        <td class="col-default">85</td>
-                        <td class="col-current"><input type="number" id="motoCardFeeRate" class="param-input" value="85" step="0.1" data-next="motoSalesPromotionRate"></td>
-                        <td class="col-unit">%</td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">销售推动费用率</td>
-                        <td class="col-default">0.9</td>
-                        <td class="col-current"><input type="number" id="motoSalesPromotionRate" class="param-input" value="0.9" step="0.1" data-next="motoStandardPremiumRatio"></td>
-                        <td class="col-unit">%</td>
-                    </tr>
-                    <tr class="param-row variable-moto-cost hidden" data-category="variable-moto">
-                        <td class="col-product">摩意险</td>
-                        <td class="col-parameter">标保系数</td>
-                        <td class="col-default">1.8</td>
-                        <td class="col-current"><input type="number" id="motoStandardPremiumRatio" class="param-input" value="1.8" step="0.1" data-next=""></td>
-                        <td class="col-unit">-</td>
-                    </tr>
-                </tbody>
-            </table>
+        </div>
+        <div class="parameters-drawer__footer">
+            <div class="drawer-footer__schemes">
+                <span class="footer-label">快捷方案</span>
+                <div class="btn-group" id="drawerSchemeSelector">
+                    <button class="btn" data-scheme="90.8">方案A</button>
+                    <button class="btn" data-scheme="104.2">方案B</button>
+                    <button class="btn" data-scheme="117.5">方案C</button>
+                    <button class="btn" data-scheme="130.8">方案D</button>
+                </div>
+            </div>
+            <div class="drawer-footer__actions">
+                <button class="btn btn--ghost" id="resetParametersBtn">重置</button>
+                <button class="btn btn--primary" id="applyParametersBtn">应用</button>
+            </div>
         </div>
     </aside>
 

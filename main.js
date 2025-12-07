@@ -26,9 +26,9 @@
 
         // --- DOM Cache, Theme, Drawer, Modal, Scheme, Tabs (mostly same logic as before) ---
         function cacheDOMElements() { /* ... same as before ... */
-            DOMElements.html = $('html'); DOMElements.themeToggleBtn = $('#themeToggleBtn'); DOMElements.parametersDrawer = $('#parametersDrawer'); DOMElements.openParametersBtn = $('#openParametersBtn'); DOMElements.closeParametersBtn = $('#closeParametersBtn'); DOMElements.drawerBackdrop = $('#drawerBackdrop'); DOMElements.helpModal = $('#indicatorHelpModal'); DOMElements.showHelpBtn = $('#showHelpBtn'); DOMElements.closeHelpModalBtn = $('#closeHelpModalBtn'); DOMElements.schemeSelector = $('#schemeSelector'); DOMElements.exportDataBtn = $('#exportDataBtn'); DOMElements.analysisTabsContainer = $('#analysisTabsContainer');
+            DOMElements.html = $('html'); DOMElements.themeToggleBtn = $('#themeToggleBtn'); DOMElements.parametersDrawer = $('#parametersDrawer'); DOMElements.openParametersBtn = $('#openParametersBtn'); DOMElements.closeParametersBtn = $('#closeParametersBtn'); DOMElements.drawerBackdrop = $('#drawerBackdrop'); DOMElements.helpModal = $('#indicatorHelpModal'); DOMElements.showHelpBtn = $('#showHelpBtn'); DOMElements.closeHelpModalBtn = $('#closeHelpModalBtn'); DOMElements.schemeSelector = $('#schemeSelector'); DOMElements.drawerSchemeSelector = $('#drawerSchemeSelector'); DOMElements.exportDataBtn = $('#exportDataBtn'); DOMElements.analysisTabsContainer = $('#analysisTabsContainer');
             DOMElements.activeSchemeLabel = $('#activeSchemeLabel'); DOMElements.activeThemeLabel = $('#activeThemeLabel'); DOMElements.insightSummary = $('#insightSummary');
-            DOMElements.summaryHeadline = $('#summaryHeadline'); DOMElements.summarySubline = $('#summarySubline'); DOMElements.focusOnProfitBtn = $('#focusOnProfitBtn'); DOMElements.openParametersBtnSecondary = $('#openParametersBtnSecondary');
+            DOMElements.summaryHeadline = $('#summaryHeadline'); DOMElements.summarySubline = $('#summarySubline'); DOMElements.focusOnProfitBtn = $('#focusOnProfitBtn'); DOMElements.openParametersBtnSecondary = $('#openParametersBtnSecondary'); DOMElements.resetParametersBtn = $('#resetParametersBtn'); DOMElements.applyParametersBtn = $('#applyParametersBtn');
             DOMElements.motoPremiumRatioDisplay = $('#motoPremiumRatioDisplay');
             DOMElements.inputs = {}; for (const key in APP_CONFIG.INPUT_SELECTORS) DOMElements.inputs[key] = $(APP_CONFIG.INPUT_SELECTORS[key]);
             DOMElements.kpis = {}; for (const key in APP_CONFIG.KPI_SELECTORS) DOMElements.kpis[key] = $(APP_CONFIG.KPI_SELECTORS[key]);
@@ -99,8 +99,8 @@
         function toggleHelpModal(show) { if (show) { DOMElements.helpModal.classList.add('is-visible'); document.body.style.overflow = 'hidden'; } else { DOMElements.helpModal.classList.remove('is-visible'); if (!DOMElements.parametersDrawer.classList.contains('is-open')) { document.body.style.overflow = ''; } } }
         function storeCurrentInputValues() { currentInputValues = {}; for (const key in DOMElements.inputs) currentInputValues[key] = DOMElements.inputs[key].value; }
         function highlightChangedParameters() { for (const key in DOMElements.inputs) { const inputElement = DOMElements.inputs[key]; inputElement.classList.remove('form-field__input--highlight'); if (inputElement.value !== currentInputValues[key]) { inputElement.classList.add('form-field__input--highlight'); inputElement.addEventListener('animationend', () => inputElement.classList.remove('form-field__input--highlight'), { once: true }); } } }
-        function applyScheme(schemeKey) { storeCurrentInputValues(); const scheme = APP_CONFIG.SCHEMES[schemeKey]; if (!scheme || !scheme.params) return; for (const key in scheme.params) if (DOMElements.inputs[key]) DOMElements.inputs[key].value = scheme.params[key]; updateUI(); toggleParametersDrawer(true); requestAnimationFrame(() => requestAnimationFrame(highlightChangedParameters)); setActiveSchemeLabel(schemeKey); }
-        function handleSchemeChange(event) { const targetButton = event.target.closest('.btn'); if (!targetButton || !targetButton.dataset.scheme) return; const schemeKey = targetButton.dataset.scheme; applyScheme(schemeKey); $$('#schemeSelector .btn').forEach(btn => btn.classList.remove('is-active')); targetButton.classList.add('is-active'); }
+        function applyScheme(schemeKey) { storeCurrentInputValues(); const scheme = APP_CONFIG.SCHEMES[schemeKey]; if (!scheme || !scheme.params) return; for (const key in scheme.params) if (DOMElements.inputs[key]) DOMElements.inputs[key].value = scheme.params[key]; updateUI(); toggleParametersDrawer(true); requestAnimationFrame(() => requestAnimationFrame(highlightChangedParameters)); setActiveSchemeLabel(schemeKey); setActiveSchemeButtons(schemeKey); }
+        function handleSchemeChange(event) { const targetButton = event.target.closest('.btn'); if (!targetButton || !targetButton.dataset.scheme) return; const schemeKey = targetButton.dataset.scheme; applyScheme(schemeKey); }
         function handleAnalysisTabClick(event) {
             const targetButton = event.target.closest('.analysis-tab-btn');
             if (!targetButton || !targetButton.dataset.tab) return;
@@ -125,6 +125,15 @@
             const scheme = APP_CONFIG.SCHEMES[schemeKey];
             const label = scheme?.name || '自定义方案';
             DOMElements.activeSchemeLabel.textContent = label;
+        }
+
+        function setActiveSchemeButtons(schemeKey) {
+            [DOMElements.schemeSelector, DOMElements.drawerSchemeSelector].forEach(group => {
+                if (!group) return;
+                group.querySelectorAll('.btn').forEach(btn => {
+                    btn.classList.toggle('is-active', btn.dataset.scheme === schemeKey);
+                });
+            });
         }
 
         function updateContextInsight(calculatedData, breakEvenData) {
@@ -750,9 +759,12 @@
             DOMElements.closeHelpModalBtn.addEventListener('click', () => toggleHelpModal(false));
             DOMElements.helpModal.addEventListener('click', (e) => { if (e.target === DOMElements.helpModal) toggleHelpModal(false); });
             DOMElements.schemeSelector.addEventListener('click', handleSchemeChange);
+            if (DOMElements.drawerSchemeSelector) DOMElements.drawerSchemeSelector.addEventListener('click', handleSchemeChange);
             DOMElements.exportDataBtn.addEventListener('click', exportDataToCSV);
             DOMElements.analysisTabsContainer.addEventListener('click', handleAnalysisTabClick);
             if (DOMElements.focusOnProfitBtn) DOMElements.focusOnProfitBtn.addEventListener('click', focusOnProfitCard);
+            if (DOMElements.resetParametersBtn) DOMElements.resetParametersBtn.addEventListener('click', () => applyScheme(DEFAULT_SCHEME_KEY));
+            if (DOMElements.applyParametersBtn) DOMElements.applyParametersBtn.addEventListener('click', () => { updateUI(); toggleParametersDrawer(false); });
             const debouncedUpdate = debounce(updateUI, 300);
             for (const key in DOMElements.inputs) {
                 DOMElements.inputs[key].addEventListener('focus', storeCurrentInputValues);
