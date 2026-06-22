@@ -221,14 +221,29 @@ export function updateChartsForTab(DOMElements, EChartsInstances, tabKey, data) 
 export function initCharts(DOMElements, EChartsInstances) {
     for (const key in APP_CONFIG.CHART_SELECTORS) {
         const chartDom = document.querySelector(APP_CONFIG.CHART_SELECTORS[key]);
-        if (chartDom) EChartsInstances[key] = echarts.init(chartDom);
+        if (chartDom) {
+            const chart = echarts.init(chartDom);
+            EChartsInstances[key] = chart;
+            // 修复「首次进入柱状图不显示」：首屏 iframe 布局未稳定 / 非激活 tab 容器 display:none
+            // 时 echarts.init 拿到 0×0 尺寸，setOption 后 canvas 仍为空。监听容器尺寸变化
+            // （0→有尺寸时）自动 resize 重绘，覆盖首屏与隐藏 tab 两种场景。
+            if (typeof ResizeObserver !== 'undefined') {
+                const observer = new ResizeObserver(() => {
+                    if (!chart.isDisposed()) chart.resize();
+                });
+                observer.observe(chartDom);
+                chart.__resizeObserver = observer;
+            }
+        }
     }
 }
 
 export function disposeCharts(EChartsInstances) {
     for (const key in EChartsInstances) {
-        if (EChartsInstances[key] && !EChartsInstances[key].isDisposed()) {
-            EChartsInstances[key].dispose();
+        const chart = EChartsInstances[key];
+        if (chart && !chart.isDisposed()) {
+            if (chart.__resizeObserver) chart.__resizeObserver.disconnect();
+            chart.dispose();
         }
     }
 }
